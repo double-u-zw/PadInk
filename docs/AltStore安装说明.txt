@@ -1,0 +1,91 @@
+PadInk 公开测试版 — 安装与更新说明
+
+版本以“先读我.txt”及 VERSIONS.json 为准。当前定位为公开 Beta，尚未完成本构建真人验收。
+下载：https://github.com/double-u-zw/PadInk/releases
+反馈：https://github.com/double-u-zw/PadInk/issues
+本套新包的真人验收待完成；请先用 USB 完成安装与一份真实文稿，再填写“真人验收清单.txt”。
+
+准备：Mac、iPad、Apple Pencil、USB 数据线和自己的免费 Apple ID。
+工程最低版本为 macOS 14 / iPadOS 17；目前真机记录为 Apple Silicon Mac / macOS 27.0.1、
+iPad Air 5 / iPadOS 27.0.1。Intel、最低系统和其他设备尚未验收。
+使用者无需 Xcode 或付费开发者会员。VPN 可以保持开启；不同网络配置仍需实际测试。
+如果 Mac 已有原开发版 PadInk，先联系给你包的人确认保留方式，不直接覆盖。
+
+一、检查拿到的文件
+解压 PadInk 测试版 ZIP，应有：
+- 先读我.txt、安装说明.txt、真人验收清单.txt
+- PadInk-Mac-Test.dmg（Mac 安装包）
+- PadInk-AltStore.ipa（iPad 安装包，交给官方 AltStore 签名）
+- docs/（支持范围、隐私和完整使用指南）
+- VERSIONS.json、SHA256SUMS（版本和文件校验）
+官方 AltServer 不在 PadInk ZIP 内，请从下文官方链接下载 1.8.1。
+缺少文件或版本对不上时通过 Issues 联系维护者，先不要安装。
+
+二、在 Mac 安装
+1. 打开 PadInk-Mac-Test.dmg，把 PadInk.app 拖到 Applications（应用程序），打开 PadInk。
+   已安装同一试用渠道旧包时，先按下文更新步骤处理。
+2. 本包未公证。首次打开若提示“无法验证开发者”，确认来自维护者且包未被修改后，
+   到“系统设置 → 隐私与安全性 → 仍要打开”，按系统提示确认。
+   若提示损坏或包含恶意软件，停止安装并联系维护者，不关闭系统安全检查。
+3. 按 PadInk 提示允许“屏幕录制”和“辅助功能”；按系统要求退出并重新打开 PadInk。
+   在菜单栏找到笔形图标。只关闭面板不等于退出 App。
+4. 解压官方 AltServer-1.8.1.zip，把 AltServer.app 拖到应用程序并打开。
+   官方 1.8.1 固定下载地址：
+   https://cdn.altstore.io/file/altstore/altserver/1_8_1.zip
+   在 Mac“系统设置 → 通用 → 登录项与扩展”添加 AltServer，使它登录时运行。
+
+三、在 iPad 安装与首次连接
+1. 用 USB 连接 Mac，解锁 iPad，确认“信任此电脑”。
+2. 在 Mac 菜单栏点击 AltServer → Install AltStore → 你的 iPad。
+   自己在官方窗口输入 Apple ID、密码和验证码，不把凭据交给维护者。
+   若账号已给其他开发 App 签名，先确认撤销证书的影响；不清楚时停下来联系维护者。
+3. 按系统提示信任开发者，启用“设置 → 隐私与安全性 → 开发者模式”，按提示重启并确认。
+4. 将 PadInk-AltStore.ipa 保存到 iPad 的“文件”App。
+   可以使用自己的 iCloud 云盘，或在 iPad 从发布页下载 ZIP 后解压。
+   在 AltStore → My Apps → 左上角“+”选择这个 IPA，保持同一个 Apple ID。
+5. 打开 iPad 的“PadInk AltStore”和 Mac 的 PadInk，允许本地网络访问。
+   只确认正在使用的两台设备，在两端允许配对。等待 USB 状态和 Mac 画面出现。
+6. 在 Mac 打开一份测试文稿，先选择应用的笔工具，再在 iPad 写字、点工具、双指滚动。
+   保存由 Mac 应用完成；请保存、关闭、重开文稿确认结果。
+   PowerPoint 的缩放可能另需“自动化”权限。Ecru 需要维护者单独提供适配构建，本包不含 Ecru。
+
+四、日常使用与续签
+Mac 打开 PadInk，iPad 打开 PadInk AltStore 并保持前台、屏幕解锁，首次推荐 USB。
+AltServer 需要在安装或续签时运行；免费签名约 7 天有效，通常最多安装 3 个侧载 App（含 AltStore）。
+每隔几天先保存文稿、结束书写，在 AltStore → My Apps → Refresh All，成功后重开 PadInk。
+可以启用 Background Refresh；需要 Mac 开机且 AltServer 可达，后台调度不能保证每次立即刷新。
+自动后台刷新、实际过期恢复和刷新对书写的影响仍待验收，不依赖它们安排重要工作。
+AltStore 自身过期时，官方提供 AltServer → Install AltStore 原位重装路径，不先删除。
+PadInk 过期或刷新报错时保留 App，联系维护者；不要卸载、Deactivate 或随意换账号。
+
+五、收到新候选包后更新
+Refresh All 只续签当前版本，不会自动下载 PadInk 新代码。
+先保存文稿、结束书写并退出 Mac PadInk；保留旧包和已有 App。
+Mac 用同一试用分发身份的新 App 覆盖更新，iPad 在 AltStore 导入新 IPA。
+保持原 Apple ID，不先删旧 App；更新后在设置/关于核对两端版本，并检查设置、配对与实际操作。
+Mac 测试包尚无稳定 Developer ID 签名，更新可能需要再次确认权限或钥匙串访问。
+身份保留与授权延续必须实际验收；本包不保证原开发版或未来正式包的自动迁移。
+若更新失败，先保留现场并导出诊断，再联系维护者确认恢复组合，不自行混装两端旧新包。
+
+六、遇到问题与反馈
+- 等待连接：检查数据线、iPad 解锁与“信任此电脑”、两端 App 前台。
+- 已连接但无画面：检查 Mac 屏幕录制授权，彻底退出并重开 Mac PadInk。
+- 有画面但不能写：检查辅助功能授权、当前 Mac 文稿与笔工具；手指失效检查手指输入开关。
+- Wi-Fi 作为后续测试：两端同一局域网并允许本地网络；受限网络可先退回 USB。
+- 恢复中：等待恢复后重新落笔；断线输入不会补送。持续失败时先导出诊断再重开。
+
+Mac：PadInk 主窗口 → 诊断 → 导出并在 Finder 显示。
+iPad：设置 → 诊断 → 生成 iPad 诊断 → 分享诊断文件。
+在 GitHub Issues 提交“真人验收清单.txt”的结果，说明设备/系统、两端 build、
+使用哪个应用、USB/Wi-Fi、最后操作与发生时间；需要时由你决定分享两端 JSON；Issues 为公开反馈，提交前查看文件，不附个人文稿或凭据。
+诊断不含屏幕帧、文稿名、逐笔坐标或配对私钥；系统崩溃报告可能有更多设备信息，发送前查看。
+无需提供 Apple ID 密码、验证码、证书、钥匙串或完整个人文稿。隐私说明见 docs/PRIVACY.md。
+
+当前已有记录：此前构建已在维护者现有 iPad 完成官方安装和原位续签，设置、配对保留，
+USB 画面与 Pencil 正常；Ecru 有 USB 真机操作确认。上述记录不代表本套新包已通过。
+
+官方帮助（2026-10-11 核对）：
+安装：https://faq.altstore.io/altstore-classic/how-to-install-altstore-macos
+续签与限制：https://faq.altstore.io/altstore-classic/your-altstore
+AltStore 过期：https://faq.altstore.io/altstore-classic/altserver
+Mac 首次打开：https://support.apple.com/zh-cn/102445
