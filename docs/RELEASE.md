@@ -4,7 +4,7 @@
 
 ## 当前冻结候选与发布者待办
 
-当前源码版本为 **0.3.0 / build 9，准备公开 Beta 2**，本机已安装的 PadInk Dev 仍为 build 8，其 AltStore 安装、启动与手动续签已在 2026-10-12 核对。Beta 2 下载和实际状态以 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.2)为准；build 9 的完整真人验收尚未完成。已冻结的正式 RC 仍为 `build/rc/0.3.0-rc.1/` 的 RC 1 / build 6；下文 RC 2 命令仅为后续示例。Beta 2 公开当前源码快照、测试与工程工具；匹配 dSYM、签名与恢复材料留在本机，不公开未经检查的本机历史。
+已公开版本为 **0.3.0 Beta 2 / build 9**，本机已安装的 PadInk Dev 仍为 build 8，其 AltStore 安装、启动与手动续签已在 2026-10-12 核对。Beta 2 下载和实际状态以 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.2)为准；build 9 的完整真人验收尚未完成。已冻结的正式 RC 仍为 `build/rc/0.3.0-rc.1/` 的 RC 1 / build 6；下文 RC 2 命令仅为后续示例。Beta 2 公开当前源码快照、测试与工程工具；匹配 dSYM、签名与恢复材料留在本机，不公开未经检查的本机历史。
 
 冻结源码与验证无签名构建后，安装分发状态仍为待完成。下面事项由发布者准备账户、提供设备并亲自验收；尚未执行的结果填写“未测”。
 
