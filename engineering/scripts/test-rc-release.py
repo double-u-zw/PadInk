@@ -314,7 +314,8 @@ class ReleaseFixture(unittest.TestCase):
         self.assertEqual((public / "docs/使用者安装指南.md").read_text(), "# Fixture doc\n\n[Guide](使用者安装指南.md)\n")
         self.assertIn("](docs/使用者安装指南.md)", (public / "RELEASE_NOTES.md").read_text())
         self.assertFalse(manifest["distribution"]["endUserDistributable"])
-        self.assertEqual(len([asset for asset in manifest["assets"] if asset["role"] == "public-documentation"]), 12)
+        self.assertEqual(len([asset for asset in manifest["assets"] if asset["role"] == "public-documentation"]), 13)
+        self.assertTrue((public / "docs/使用教程.md").is_file())
         (public / "private.ipa").write_text("not public")
         with self.assertRaises(module.ReleaseError): module.check_public(self.root, public)
 

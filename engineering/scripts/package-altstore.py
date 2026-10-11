@@ -137,7 +137,12 @@ def package(out, public_beta=False, variant='release'):
             shutil.copy2(ipa, stage / ipa.name)
             shutil.copy2(ROOT / 'docs/AltStore安装说明.txt', stage / '安装说明.txt')
             shutil.copy2(ROOT / 'docs/试用验收清单.txt', stage / '真人验收清单.txt')
-            shutil.copy2(ROOT / 'docs/使用教程.md', stage / '使用教程.md')
+            tutorial = (ROOT / 'docs/使用教程.md').read_text()
+            for original, target in [('AltStore安装说明.txt', '安装说明.txt'),
+                                     ('试用验收清单.txt', '真人验收清单.txt'),
+                                     ('SUPPORT_MATRIX.md', 'docs/SUPPORT_MATRIX.md')]:
+                tutorial = tutorial.replace('(' + original + ')', '(' + target + ')')
+            (stage / '使用教程.md').write_text(tutorial)
             shutil.copy2(ROOT / 'LICENSE', stage / 'LICENSE')
             (stage / 'docs').mkdir()
             for document in PUBLIC_DOCS if public_beta else TRIAL_DOCS:
