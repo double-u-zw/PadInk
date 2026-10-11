@@ -1,0 +1,10 @@
+.build/
+.swiftpm/
+build/
+.DS_Store
+xcuserdata/
+*.xcuserstate
+__pycache__/
+*.pyc
+# Per-machine signing team and bundle prefix (docs/开发者指南.md). Never committed.
+Config/*.local.xcconfig

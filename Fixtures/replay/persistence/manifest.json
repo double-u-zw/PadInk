@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "description": "Native PowerPoint persistence test fixtures with author and local-path metadata removed for public source. Ink, slide and relationship bytes are unchanged.",
+  "scope": "These fixtures protect native InkML decoding and reopen identity/placement. Passing them does not certify trajectory accuracy or current real-device acceptance. The original E-001/E-002 reports remain FAIL; later placement reanalysis is a separate assertion.",
+  "fixtures": [
+    {
+      "path": "baseline-0.1/before-reopen.pptx",
+      "bytes": 129383,
+      "sha256": "bf6969f77154fba5285bb70c1ff0ec231e612c8043cbdb8f2adc76cfb298b321",
+      "sourceCommit": "5c66605c6a20e7e25de19981e1c8ddf1803a6df7",
+      "evidenceID": "B-003",
+      "capturedAtUTC": "2026-10-04T09:21:35Z",
+      "expectedInkParts": 81,
+      "purpose": "Original native PowerPoint ink survives save, close and reopen byte for byte.",
+      "historicalResult": "PASS"
+    },
+    {
+      "path": "baseline-0.1/after-reopen.pptx",
+      "bytes": 129490,
+      "sha256": "3fe035cef5ab12d0d423fbf5e57766f8677119d901aaec26ff556dbf1a15880f",
+      "sourceCommit": "5c66605c6a20e7e25de19981e1c8ddf1803a6df7",
+      "evidenceID": "B-003",
+      "capturedAtUTC": "2026-10-04T09:21:35Z",
+      "expectedInkParts": 81,
+      "purpose": "Original native PowerPoint ink survives save, close and reopen byte for byte.",
+      "historicalResult": "PASS"
+    },
+    {
+      "path": "replay-hid/before-reopen.pptx",
+      "bytes": 153102,
+      "sha256": "171d4c7923f2e27a5c9650c3ae357ed2947e96d2efe453d38e28a958aa655626",
+      "sourceCommit": "a1e5dd880fdafc6865970c9e9b1be122ec6af9d2",
+      "evidenceID": "E-001",
+      "capturedAtUTC": "2026-10-05T10:30:53Z",
+      "expectedInkParts": 85,
+      "purpose": "HID replay: native ink identity and placement survive part renaming and regrouping after reopen.",
+      "historicalReportResult": "FAIL"
+    },
+    {
+      "path": "replay-hid/after-reopen.pptx",
+      "bytes": 153326,
+      "sha256": "c81dfec90e207acf75d3469d9eee5628654b82c4e67f93b1c163bcf47f7652d6",
+      "sourceCommit": "a1e5dd880fdafc6865970c9e9b1be122ec6af9d2",
+      "evidenceID": "E-001",
+      "capturedAtUTC": "2026-10-05T10:30:53Z",
+      "expectedInkParts": 85,
+      "purpose": "HID replay: native ink identity and placement survive part renaming and regrouping after reopen.",
+      "historicalReportResult": "FAIL"
+    },
+    {
+      "path": "replay-private/before-reopen.pptx",
+      "bytes": 153085,
+      "sha256": "8e3dc84b875a1c42824276aa46dd9e14039f98ac8a997dc32d62504124ed6016",
+      "sourceCommit": "a1e5dd880fdafc6865970c9e9b1be122ec6af9d2",
+      "evidenceID": "E-002",
+      "capturedAtUTC": "2026-10-05T10:34:16Z",
+      "expectedInkParts": 85,
+      "purpose": "Private event-source comparison: native ink identity and placement survive part renaming and regrouping after reopen.",
+      "historicalReportResult": "FAIL"
+    },
+    {
+      "path": "replay-private/after-reopen.pptx",
+      "bytes": 153311,
+      "sha256": "d636edff48afb7c5b4841ce19d3bcf57de4b860cc575d0dfecdb1f72b8ab4f32",
+      "sourceCommit": "a1e5dd880fdafc6865970c9e9b1be122ec6af9d2",
+      "evidenceID": "E-002",
+      "capturedAtUTC": "2026-10-05T10:34:16Z",
+      "expectedInkParts": 85,
+      "purpose": "Private event-source comparison: native ink identity and placement survive part renaming and regrouping after reopen.",
+      "historicalReportResult": "FAIL"
+    }
+  ]
+}

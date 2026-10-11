@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>PadInk G0a · HTTP/IP 诊断</title>
+  <style>
+    :root { color-scheme: light dark; --page: #f4f6f8; --card: #fff; --text: #182330; --muted: #526273; --line: #d8e0e7; --accent: #175ba5; --pending: #8b5700; --failed: #ac2830; --success: #186840; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { max-width: 880px; margin: auto; padding: 28px 20px 48px; }
+    h1 { font-size: 26px; line-height: 1.3; margin: 0 0 12px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    p { margin: 10px 0; }
+    section { margin-top: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+    .muted { color: var(--muted); }
+    .notice { border-left: 4px solid var(--accent); padding-left: 12px; }
+    code { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 16px 0; }
+    label { display: grid; gap: 4px; }
+    select, button { min-height: 48px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font: inherit; }
+    select { color: var(--text); background: var(--card); }
+    button { color: #fff; background: var(--accent); border-color: var(--accent); cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    #status { padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-weight: 600; }
+    #status[data-state="pending"] { color: var(--pending); }
+    #status[data-state="failed"] { color: var(--failed); }
+    #status[data-state="success"] { color: var(--success); }
+    dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 16px 0 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    ol { margin: 0; padding-left: 24px; }
+    li { margin-bottom: 10px; }
+    .history { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { white-space: nowrap; }
+    td:last-child { min-width: 210px; overflow-wrap: anywhere; }
+    @media (prefers-color-scheme: dark) { :root { --page: #111921; --card: #19242f; --text: #e4edf5; --muted: #a9b9c8; --line: #344352; --accent: #2169b5; --pending: #e9bc71; --failed: #ff9da2; --success: #80d4a6; } }
+    @media (max-width: 560px) { main { padding: 20px 12px 36px; } section { padding: 16px; } dl { grid-template-columns: 1fr; gap: 0; } dd { margin-bottom: 8px; } h1 { font-size: 23px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>PadInk G0a · HTTP/IP 诊断</h1>
+      <p class="notice">本页只验证一次真实 HTTP 请求。请求成功不代表 USB 已通过；WSS、WebRTC、视频和输入均未测试。</p>
+      <p class="muted">没有录屏、系统控制或配对。页面不保存 Cookie、网站存储或离线缓存，也不自动改变网络设置。Mac 探针最多运行 30 分钟或接收 500 次请求，任一上限到达即退出。</p>
+      <p>本轮 runID：<code id="run-id">__PADINK_RUN_ID__</code></p>
+      <p>Mac PID：<code>__PADINK_PID__</code>；固定端口：<code>__PADINK_PORT__</code>。</p>
+    </header>
+
+    <section aria-labelledby="request-title">
+      <h2 id="request-title">手动发起一个新请求</h2>
+      <p>每次点击使用新 nonce。前、后正对照各至少点击三次；USB 插拔观察也逐次点击。页面仍可见不证明服务器可达。</p>
+      <div class="controls">
+        <label for="phase">当前步骤
+          <select id="phase">
+            <option value="pre">前正对照 · 已知局域网</option>
+            <option value="usb">普通线 · 插拔观察</option>
+            <option value="post">后正对照 · 恢复局域网</option>
+            <option value="exit">退出验收 · 已停止服务</option>
+          </select>
+        </label>
+        <button id="request" type="button">发起新 nonce 请求</button>
+      </div>
+      <div id="status" data-state="idle" role="status" aria-live="polite" aria-atomic="true">尚未验证。请选择当前步骤，然后点击按钮。</div>
+      <dl>
+        <dt>当前 nonce</dt><dd><code id="nonce">—</code></dd>
+        <dt>服务端计数</dt><dd id="count">—</dd>
+        <dt>Mac 本地端点</dt><dd><code id="local-endpoint">—</code></dd>
+        <dt>请求远端端点</dt><dd><code id="remote-endpoint">—</code></dd>
+        <dt>接口观察</dt><dd><code id="interface-evidence">未知；需结合 Mac 控制台与人工插拔证据</code></dd>
+      </dl>
+      <p class="muted">单次失败也不能单独判 USB 不成立。退出验收的请求失败仅为预期观察，仍须在 Mac 确认原 PID 已退出且端口不再监听。</p>
+    </section>
+
+    <section aria-labelledby="steps-title">
+      <h2 id="steps-title">切网前保留这些恢复与退出步骤</h2>
+      <p>切网后保留当前页面，不要刷新。以下文字无需网络即可阅读；退出或恢复不依赖继续在线向 Codex 求助。</p>
+      <ol>
+        <li><strong>准备：</strong>记录原 Wi-Fi、蜂窝／热点与其它网络设置，确认 iPad 原生 PadInk 及转发辅助程序已停用。Mac 记录探针 PID、端口和本页 runID；不卸载或清除 App 数据。</li>
+        <li><strong>前正对照：</strong>保持已知可工作的同一局域网，在本页选择“前正对照”，完成至少三次不同 nonce 的有效回显。失败则停止 USB 判定。</li>
+        <li><strong>隔离与普通线：</strong>由用户停用会掩盖路径的 Wi-Fi、蜂窝／热点和其它承载，再用普通数据线测试。选择“普通线”，每次插／拔后点击一次，最多三次插拔。接口名或插着线都不能独立证明路径。</li>
+        <li><strong>后正对照：</strong>恢复先前记录的局域网设置，Mac 探针保持同一 PID、端口和 runID。选择“后正对照”，在有效 Mac 地址下完成至少三次新 nonce。不能恢复、进程重启或后对照失败时，本轮为证据不足。</li>
+        <li><strong>退出：</strong>恢复原设置；在 Mac 终端先用 <code>ps -p __PADINK_PID__ -o pid=,command=</code> 核对该 PID 仍为本次 WebProbe，再运行 <code>kill -INT __PADINK_PID__</code>（也可在启动终端按 Control-C）。用 <code>lsof -nP -a -p __PADINK_PID__ -iTCP:__PADINK_PORT__ -sTCP:LISTEN</code> 核对无监听，再选“退出验收”发起一次新 nonce；此时应失败。PID 已退出则不再 kill；不要停止其它进程。</li>
+      </ol>
+      <p class="notice">若 Mac 地址改变，需使用恢复后的有效地址并核对相同 runID；不得把新进程的成功接到旧进程的前正对照。新地址页面的本地历史不包含上一页记录，使用 nonce 与 Mac 控制台关联。</p>
+      <p>最终结果由前后对照、监听覆盖、人工隔离和端点／接口证据共同判断：<code>PASS_IP_PATH</code>、<code>NOT_ESTABLISHED_ON_THIS_SETUP</code> 或 <code>INCONCLUSIVE</code>。本页不自动给出这三种结论。</p>
+    </section>
+
+    <section aria-labelledby="history-title">
+      <h2 id="history-title">本页最近 12 次请求</h2>
+      <p class="muted">历史仅存在本页内存，时间是浏览器本地观察，不能用于跨设备延迟计算。切换步骤不会把旧结果变成当前成功。</p>
+      <div class="history">
+        <table>
+          <thead><tr><th>本地时间</th><th>步骤</th><th>计数</th><th>请求与结果</th></tr></thead>
+          <tbody id="history"><tr id="empty-history"><td colspan="4">尚无请求记录。</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <noscript><p>JavaScript 未启用，不能发起 nonce 验证；本页显示不计为连通成功。请先恢复原网络设置并退出探针。</p></noscript>
+  </main>
+  <script>
+    "use strict";
+    (() => {
+      const elements = {
+        runID: document.getElementById("run-id"), phase: document.getElementById("phase"),
+        button: document.getElementById("request"), status: document.getElementById("status"),
+        nonce: document.getElementById("nonce"), count: document.getElementById("count"),
+        local: document.getElementById("local-endpoint"), remote: document.getElementById("remote-endpoint"),
+        evidence: document.getElementById("interface-evidence"), history: document.getElementById("history")
+      };
+      const expectedRunID = elements.runID.textContent.trim();
+      const phaseNames = { pre: "前正对照", usb: "普通线", post: "后正对照", exit: "退出验收" };
+      let nonceSequence = 0;
+      let lastCount = 0;
+      let requestToken = 0;
+      let currentController = null;
+      let terminated = false;
+
+      function setStatus(state, message) {
+        elements.status.dataset.state = state;
+        elements.status.textContent = message;
+      }
+
+      function clearCurrent() {
+        elements.count.textContent = "—";
+        elements.local.textContent = "—";
+        elements.remote.textContent = "—";
+        elements.evidence.textContent = "未知；需结合 Mac 控制台与人工插拔证据";
+      }
+
+      function newNonce() {
+        nonceSequence += 1;
+        let suffix;
+        try {
+          const bytes = new Uint8Array(8);
+          globalThis.crypto.getRandomValues(bytes);
+          suffix = Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+        } catch (_) {
+          // Nonces correlate requests; they grant no authentication or control.
+          suffix = Math.random().toString(36).slice(2, 14);
+        }
+        return "p-" + Date.now().toString(36) + "-" + nonceSequence.toString(36) + "-" + suffix;
+      }
+
+      function addHistory(phase, nonce, count, result) {
+        const empty = document.getElementById("empty-history");
+        if (empty) empty.remove();
+        const row = document.createElement("tr");
+        const values = [new Date().toLocaleTimeString(), phaseNames[phase], count === null ? "—" : String(count), nonce + " · " + result];
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        }
+        elements.history.prepend(row);
+        while (elements.history.children.length > 12) elements.history.lastElementChild.remove();
+      }
+
+      function evidenceText(value) {
+        if (value === undefined || value === null || value === "") return "未知；需结合 Mac 控制台与人工插拔证据";
+        const text = typeof value === "string" ? value : JSON.stringify(value);
+        return text.slice(0, 2048);
+      }
+
+      function terminateRound() {
+        terminated = true;
+        elements.button.disabled = true;
+        setStatus("failed", "runID 已改变，本轮证据链终止。请在 Mac 核对探针并刷新页面，从前正对照重新开始；不要合并两轮记录。");
+      }
+
+      async function requestProbe() {
+        if (terminated) return;
+        const phase = elements.phase.value;
+        if (!Object.hasOwn(phaseNames, phase)) return;
+        const token = ++requestToken;
+        if (currentController) currentController.abort();
+        const controller = new AbortController();
+        currentController = controller;
+        let timedOut = false;
+        const nonce = newNonce();
+        clearCurrent();
+        elements.nonce.textContent = nonce;
+        setStatus("pending", "正在验证 · " + phaseNames[phase] + "。此前成功不是本次结果。");
+        const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 5000);
+        try {
+          const query = new URLSearchParams({ nonce, runID: expectedRunID, phase });
+          const response = await fetch("/probe?" + query.toString(), {
+            method: "GET", cache: "no-store", credentials: "omit", redirect: "error", signal: controller.signal
+          });
+          const body = await response.text();
+          if (token !== requestToken) return;
+          if (timedOut) throw new Error("请求已超过 5 秒验证期限");
+          if (body.length > 16384) throw new Error("响应超过诊断上限");
+          let data;
+          try { data = JSON.parse(body); } catch (_) { throw new Error("服务端未返回有效诊断 JSON"); }
+          if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("诊断响应格式不符");
+          if (typeof data.runID === "string" && data.runID !== expectedRunID) {
+            addHistory(phase, nonce, null, "runID 改变，整轮终止");
+            terminateRound();
+            return;
+          }
+          if (!response.ok) throw new Error("HTTP " + response.status + "，本次请求未通过");
+          if (data.runID !== expectedRunID || data.nonce !== nonce) throw new Error("runID 或 nonce 未匹配本次请求");
+          if (!Number.isSafeInteger(data.count) || data.count <= lastCount) throw new Error("服务端计数未递增，拒绝过期或不合法响应");
+          if (typeof data.localEndpoint !== "string" || typeof data.remoteEndpoint !== "string") throw new Error("服务端端点信息格式不符");
+          lastCount = data.count;
+          elements.count.textContent = String(data.count);
+          elements.local.textContent = data.localEndpoint || "未知";
+          elements.remote.textContent = data.remoteEndpoint || "未知";
+          elements.evidence.textContent = evidenceText(data.interfaceEvidence);
+          const result = phase === "exit" ? "本次请求仍成功，退出验收未完成" : "本次 HTTP 请求成功，不代表 USB 通过";
+          setStatus(phase === "exit" ? "failed" : "success", result);
+          addHistory(phase, nonce, data.count, result);
+        } catch (error) {
+          if (token !== requestToken) return;
+          const detail = timedOut ? "5 秒内未得到有效回显" : error.name === "AbortError" ? "请求已取消" : error.message || "网络请求失败";
+          const message = phase === "exit" ? "本次请求失败（退出验收的预期观察），仍须核对 Mac PID 和端口。" : "本次请求失败；不能单独据此判断 USB 未成立。";
+          setStatus("failed", message + " " + detail);
+          addHistory(phase, nonce, null, message + " " + detail);
+        } finally {
+          clearTimeout(timeout);
+          if (token === requestToken) currentController = null;
+        }
+      }
+
+      elements.button.addEventListener("click", requestProbe);
+      elements.phase.addEventListener("change", () => {
+        ++requestToken;
+        if (currentController) currentController.abort();
+        currentController = null;
+        clearCurrent();
+        elements.nonce.textContent = "—";
+        if (!terminated) setStatus("idle", "步骤已切换。点击按钮验证当前步骤，旧响应不会覆盖当前状态。");
+      });
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(expectedRunID)) {
+        terminated = true;
+        elements.button.disabled = true;
+        setStatus("failed", "页面没有有效的 Mac runID。直接打开 HTML 文件不计连通成功；请使用本次探针提供的 HTTP 地址。");
+      }
+    })();
+  </script>
+</body>
+</html>

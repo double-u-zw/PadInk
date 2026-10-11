@@ -1,0 +1,18 @@
+// Development and release are separate Apps; release retains existing trust/transport namespaces.
+#include "Version.xcconfig"
+#include? "Signing.local.xcconfig"
+
+PADINK_BUILD_VARIANT = development
+PADINK_NAME_development = PadInk Dev
+PADINK_NAME_release = PadInk
+PADINK_SUFFIX_development = .development
+PADINK_SUFFIX_release =
+PADINK_BONJOUR_development = _pnk2-dev._tcp
+PADINK_BONJOUR_release = _pnk2._tcp
+PADINK_DISPLAY_NAME = $(PADINK_NAME_$(PADINK_BUILD_VARIANT))
+PADINK_BONJOUR_SERVICE_TYPE = $(PADINK_BONJOUR_$(PADINK_BUILD_VARIANT))
+PRODUCT_NAME = $(PADINK_DISPLAY_NAME)
+PADINK_MAC_BUNDLE_ID = $(PADINK_BUNDLE_PREFIX).mac$(PADINK_SUFFIX_$(PADINK_BUILD_VARIANT))
+PADINK_IPAD_BUNDLE_ID = $(PADINK_BUNDLE_PREFIX).ipad$(PADINK_SUFFIX_$(PADINK_BUILD_VARIANT))
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development

@@ -1,6 +1,7 @@
-PadInk 公开测试版 — 安装与更新说明
+PadInk 0.3.0 Beta 2 / build 9 — 安装步骤
 
-版本以“先读我.txt”及 VERSIONS.json 为准。当前定位为公开 Beta，尚未完成本构建真人验收。
+本次双端版本为 0.3.0 / build 9。安装完成后请阅读同目录“使用教程.md”。
+当前定位为公开 Beta，尚未完成本构建完整真人验收；版本也可在 VERSIONS.json 核对。
 下载：https://github.com/double-u-zw/PadInk/releases
 反馈：https://github.com/double-u-zw/PadInk/issues
 本套新包的真人验收待完成；请先用 USB 完成安装与一份真实文稿，再填写“真人验收清单.txt”。
@@ -9,20 +10,26 @@ PadInk 公开测试版 — 安装与更新说明
 工程最低版本为 macOS 14 / iPadOS 17；目前真机记录为 Apple Silicon Mac / macOS 27.0.1、
 iPad Air 5 / iPadOS 27.0.1。Intel、最低系统和其他设备尚未验收。
 使用者无需 Xcode 或付费开发者会员。VPN 可以保持开启；不同网络配置仍需实际测试。
-如果 Mac 已有原开发版 PadInk，先联系给你包的人确认保留方式，不直接覆盖。
+新包有 PadInk（正式版产品身份）与 PadInk Dev（开发版），设置、权限和配对独立；Mac/iPad 必须选同一版。
+开发版首次要重新授权与配对，不删除原 PadInk。正式版身份的 RC 不代表稳定版已完成验收。
+在“关于本机”确认芯片：Apple M 系列选 arm64，Intel 选 x86_64。
+Beta 2 分为 M 系列（arm64）和 Intel（x86_64）；Intel 包已构建，尚未真机验证。
+首次推荐下载完整 ZIP：PadInk-0.3.0-b9-Beta-arm64.zip 或 PadInk-0.3.0-b9-Beta-x86_64.zip。
+两份 ZIP 都含相同的 iPad IPA，选择你的 Mac 芯片即可，不用同时下载。
+也可只下载对应 DMG 和共用 PadInk-AltStore.ipa；官方 AltServer 另行下载。
 
 一、检查拿到的文件
 解压 PadInk 测试版 ZIP，应有：
-- 先读我.txt、安装说明.txt、真人验收清单.txt
-- PadInk-Mac-Test.dmg（Mac 安装包）
-- PadInk-AltStore.ipa（iPad 安装包，交给官方 AltStore 签名）
+- 先读我.txt、安装说明.txt、使用教程.md、真人验收清单.txt、LICENSE
+- PadInk-<版本>-b<build>-mac-arm64.dmg 或 ...-x86_64.dmg（Mac 包；开发版前缀 PadInk-Dev）
+- PadInk-AltStore.ipa 或 PadInk-Dev-AltStore.ipa（iPad 包，交给官方 AltStore 签名）
 - docs/（支持范围、隐私和完整使用指南）
 - VERSIONS.json、SHA256SUMS（版本和文件校验）
 官方 AltServer 不在 PadInk ZIP 内，请从下文官方链接下载 1.8.1。
 缺少文件或版本对不上时通过 Issues 联系维护者，先不要安装。
 
 二、在 Mac 安装
-1. 打开 PadInk-Mac-Test.dmg，把 PadInk.app 拖到 Applications（应用程序），打开 PadInk。
+1. 打开对应芯片的 DMG，把 PadInk.app（或 PadInk Dev.app）拖到 Applications（应用程序），打开相应 App。
    已安装同一试用渠道旧包时，先按下文更新步骤处理。
 2. 本包未公证。首次打开若提示“无法验证开发者”，确认来自维护者且包未被修改后，
    到“系统设置 → 隐私与安全性 → 仍要打开”，按系统提示确认。
@@ -36,27 +43,32 @@ iPad Air 5 / iPadOS 27.0.1。Intel、最低系统和其他设备尚未验收。
 
 三、在 iPad 安装与首次连接
 1. 用 USB 连接 Mac，解锁 iPad，确认“信任此电脑”。
-2. 在 Mac 菜单栏点击 AltServer → Install AltStore → 你的 iPad。
+2. 若希望通过 Wi-Fi 发现并续签，在 Finder 侧边栏选择 iPad，勾选“通过 Wi-Fi 显示此 iPad”并应用。
+   首次先保持 USB 连接；这项是 AltServer 的设备发现设置，与 PadInk 本地网络授权分别处理。
+   在 Mac 菜单栏点击 AltServer → Install AltStore → 你的 iPad。
    自己在官方窗口输入 Apple ID、密码和验证码，不把凭据交给维护者。
    若账号已给其他开发 App 签名，先确认撤销证书的影响；不清楚时停下来联系维护者。
-3. 按系统提示信任开发者，启用“设置 → 隐私与安全性 → 开发者模式”，按提示重启并确认。
-4. 将 PadInk-AltStore.ipa 保存到 iPad 的“文件”App。
+3. 在 iPad“设置 → 通用 → VPN 与设备管理”中选择自己的开发者账号，按提示信任。
+   再启用“设置 → 隐私与安全性 → 开发者模式”，按提示重启并再次确认；菜单名可能随系统版本变化。
+4. 将同一版本身份的 IPA 保存到 iPad 的“文件”App。
    可以使用自己的 iCloud 云盘，或在 iPad 从发布页下载 ZIP 后解压。
    在 AltStore → My Apps → 左上角“+”选择这个 IPA，保持同一个 Apple ID。
-5. 打开 iPad 的“PadInk AltStore”和 Mac 的 PadInk，允许本地网络访问。
+5. 打开 iPad 与 Mac 的同一版 PadInk 或 PadInk Dev，允许本地网络访问。
    只确认正在使用的两台设备，在两端允许配对。等待 USB 状态和 Mac 画面出现。
 6. 在 Mac 打开一份测试文稿，先选择应用的笔工具，再在 iPad 写字、点工具、双指滚动。
    保存由 Mac 应用完成；请保存、关闭、重开文稿确认结果。
    PowerPoint 的缩放可能另需“自动化”权限。Ecru 需要维护者单独提供适配构建，本包不含 Ecru。
 
 四、日常使用与续签
-Mac 打开 PadInk，iPad 打开 PadInk AltStore 并保持前台、屏幕解锁，首次推荐 USB。
+Mac 与 iPad 打开同一版 PadInk 或 PadInk Dev 并保持前台、屏幕解锁，首次推荐 USB。
 AltServer 需要在安装或续签时运行；免费签名约 7 天有效，通常最多安装 3 个侧载 App（含 AltStore）。
 每隔几天先保存文稿、结束书写，在 AltStore → My Apps → Refresh All，成功后重开 PadInk。
-可以启用 Background Refresh；需要 Mac 开机且 AltServer 可达，后台调度不能保证每次立即刷新。
+在 AltStore Settings 启用 Background Refresh，并允许 iPad 系统的后台 App 刷新；需要 Mac 开机且 AltServer 可达，后台调度不能保证每次立即刷新。
 自动后台刷新、实际过期恢复和刷新对书写的影响仍待验收，不依赖它们安排重要工作。
 AltStore 自身过期时，官方提供 AltServer → Install AltStore 原位重装路径，不先删除。
 PadInk 过期或刷新报错时保留 App，联系维护者；不要卸载、Deactivate 或随意换账号。
+
+从 Xcode 开发安装改用 AltStore：Xcode App 不会自动进入 My Apps，需要导入开发版 IPA。两种安装身份不同；先保留恢复材料，按开发者指南处理旧开发版名额，首次迁移后重新配对。后续同身份更新和续签保留 App，不重复卸载。
 
 五、收到新候选包后更新
 Refresh All 只续签当前版本，不会自动下载 PadInk 新代码。
@@ -84,8 +96,16 @@ iPad：设置 → 诊断 → 生成 iPad 诊断 → 分享诊断文件。
 当前已有记录：此前构建已在维护者现有 iPad 完成官方安装和原位续签，设置、配对保留，
 USB 画面与 Pencil 正常；Ecru 有 USB 真机操作确认。上述记录不代表本套新包已通过。
 
-官方帮助（2026-10-11 核对）：
+官方帮助（2026-10-12 核对）：
 安装：https://faq.altstore.io/altstore-classic/how-to-install-altstore-macos
 续签与限制：https://faq.altstore.io/altstore-classic/your-altstore
 AltStore 过期：https://faq.altstore.io/altstore-classic/altserver
 Mac 首次打开：https://support.apple.com/zh-cn/102445
+
+七、尚未验证与源码
+本次 build 9 公开包的独立首次安装、完整文稿任务、30–60 分钟使用、Wi-Fi 切换/恢复、
+自动后台续签、实际过期恢复和覆盖升级仍待真人验收。Intel 实机、最低系统与第二套设备未验证。
+已有开发版 build 8 安装、启动及 Refresh All 成功记录，仅证明该开发版和现有设备。
+当前 Mac 包未公证；iPad 采用 AltStore，尚无 TestFlight 或 App Store 入口。
+Beta 2 当前源码、工程、测试和文档公开于 https://github.com/double-u-zw/PadInk ，采用 MIT 许可证。
+本机签名配置、证书、凭据、设备备份、诊断和旧本机历史不公开。

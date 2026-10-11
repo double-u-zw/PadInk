@@ -1,0 +1,7 @@
+// One release/build number for both apps. Every new App Store Connect upload increments build.
+// Candidate labels (rc.1, rc.2) belong to the release notes/tag, not Apple's marketing version.
+MARKETING_VERSION = 0.3.0
+CURRENT_PROJECT_VERSION = 9
+// Direct Xcode and local signing stay developer installs. rc-release.py overrides these explicitly.
+PADINK_RELEASE_CHANNEL = development
+PADINK_DISTRIBUTION = developer

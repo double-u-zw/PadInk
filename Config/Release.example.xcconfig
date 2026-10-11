@@ -1,0 +1,11 @@
+// COPY to Release.local.xcconfig, then replace EVERY placeholder.
+// Paid distribution only. Never include passwords, API private keys or certificates here.
+// Do not copy this over Signing.local.xcconfig: local developer installs keep their identity.
+DEVELOPMENT_TEAM = YOUR_PAID_TEAM_ID
+PADINK_BUNDLE_PREFIX = YOUR_REGISTERED_BUNDLE_PREFIX
+PADINK_MAC_BUNDLE_ID = YOUR_REGISTERED_MAC_BUNDLE_ID
+PADINK_IPAD_BUNDLE_ID = YOUR_REGISTERED_IPAD_BUNDLE_ID
+PADINK_MAC_SIGN_IDENTITY = Developer ID Application: YOUR LEGAL NAME (YOUR_PAID_TEAM_ID)
+PADINK_IPAD_SIGN_IDENTITY = Apple Distribution
+// Store credentials with xcrun notarytool store-credentials; only its profile name goes here.
+PADINK_NOTARY_PROFILE = YOUR_KEYCHAIN_PROFILE_NAME
