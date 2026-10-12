@@ -1,6 +1,6 @@
 # PadInk 发布候选与分发流程
 
-命令在源码仓库根目录执行。本文描述候选准备、签名、公证、安装验证和发行操作；本地签名覆盖安装与 Developer ID / TestFlight 分发分别核验。正式版为 PadInk，开发版为 PadInk Dev；Mac 安装路径分别为 `/Applications/PadInk.app` 与 `/Applications/PadInk Dev.app`。
+命令在源码仓库根目录执行。本文描述候选准备、签名、公证、安装验证和发行操作；本地签名覆盖安装与 Developer ID / TestFlight 分发分别核验。对外发布的正式版统一为 PadInk（包括 Beta/RC），本机源码开发与内部自用为 PadInk Dev；公开下载不提供开发版。Mac 安装路径分别为 `/Applications/PadInk.app` 与 `/Applications/PadInk Dev.app`。
 
 ## 当前冻结候选与发布者待办
 
@@ -22,11 +22,11 @@
 
 真人记录模板见[试用验收清单](试用验收清单.txt)。正式包验收用 Developer ID / TestFlight 的真实安装流程；清单中 AltStore 开发者模式与续签项目不适用时记“不适用”，不能要求 TestFlight 用户按 AltStore 流程安装。
 
-源码冻结后若修复产品代码或改变构建配置，应递增 build 并准备新候选。签名和上传使用当前候选；额外证书/profile 不写入源码，不改变已冻结资产。
+源码冻结后若修复产品代码或改变构建配置，应递增 build 并准备新候选。签名和上传使用当前候选；额外证书/profile 不写入源码，冻结的程序、源码身份和 tag 不变。已发布 ZIP 仅修订随包说明时，单独记录 documentationRevision 与 documentationSourceCommit，逐字节核对 DMG / IPA 未变，更新包内及发布页校验值，并在发布说明注明日期与无需重装。
 
-## 开发版、正式版与 Mac 芯片包
+## 本机开发版、对外正式版与 Mac 芯片包
 
-| 项目 | 开发版 | 正式版产品身份 |
+| 项目 | 开发版 | 对外正式版 |
 |---|---|---|
 | 名称与 Mac 安装目录 | PadInk Dev / PadInk Dev.app | PadInk / PadInk.app |
 | 默认使用场景 | 日常源码构建、诊断与内部试验 | 给使用者的 Beta/RC 与后续稳定分发 |
@@ -36,7 +36,7 @@
 | 配对 Keychain service | dev.padink03.trust.development | dev.padink03.trust |
 | USB loopback / Bonjour | 42372 / _pnk2-dev._tcp | 42371 / _pnk2._tcp |
 
-两版可同时保留，首次 PadInk Dev 需要独立授权与配对，不拷贝已有版的密钥或设置。双端须选择同一版；芯片包共用该版身份。`release` 指产品身份，`rc` / `development` / 后续 `release` 指成熟度渠道，`altstore` / `direct` / `testflight` 指安装分发方式。给使用者的 RC 不会因为产品身份叫正式版就变成稳定版。
+两版可同时保留，首次 PadInk Dev 需要独立授权与配对，不拷贝已有版的密钥或设置。双端须选择同一版；芯片包共用该版身份。`release` 指对外 PadInk 的构建身份，`development` variant 指本机 PadInk Dev；渠道 `rc` / `development` / `release` 与 `altstore` / `direct` / `testflight` 是工程元数据。对外名称统一为 PadInk；Beta/RC 表示发布阶段，验收范围按事实说明，不让使用者选择开发版。
 
 Mac 分别构建 arm64 与 x86_64 的单架构 App；文件名带架构，包内二进制与匹配 dSYM 必须核对。AltStore 本地包每版输出两个 DMG、两个含对应 DMG 和共用 iPad IPA 的 ZIP；Developer ID 路径对每个架构分别 archive、签名、公证、附票据并生成 ZIP，只有两份都通过才允许完整公开 staging。正式签名工具只使用正式版身份。
 

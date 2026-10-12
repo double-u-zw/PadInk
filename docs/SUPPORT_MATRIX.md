@@ -1,10 +1,10 @@
-# PadInk 候选发布支持范围
+# PadInk 发布支持范围
 
 本轮版本为 **0.3.0 Beta 2（build 9）测试版**，下载入口见 [发布页](https://github.com/double-u-zw/PadInk/releases)；该候选包的真人验收尚待完成。当前开发者设备已有 USB / Wi-Fi、自动切换、Pencil / Touch 和 GoodNotes 连续缩放的使用记录；2026-10-11 的 Ecru USB 实测记录见下表。以下表格说明实际支持范围与尚未验证的边界；正式 Developer ID / TestFlight 分发、最低系统和第二套设备仍需单独验证。
 
-开发版 PadInk Dev 与正式版 PadInk 独立身份/设置/配对，双端应选择同一版。新 Mac 安装包分别提供 arm64（Apple Silicon / M 系列）与 x86_64（Intel）；芯片包共用各自版本身份，Intel 实机仍未验证。
+本次对外发布的两端都叫 PadInk。Mac 安装包分别提供 arm64（Apple Silicon / M 系列）与 x86_64（Intel），iPad IPA 共用；Intel 实机仍未验证。
 
-Beta 2 使用 build 9；本机开发版 build 8 的 AltStore 安装、启动与 Refresh All 已在 2026-10-12 核对，背景刷新开关由使用者确认开启，尚未观察实际后台续签周期。这些记录不代替 build 9 公开包验收。正式冻结 RC 仍为 RC 1 / build 6；Beta 2 包的真人验收、正式签名下载与 TestFlight 验收仍待完成，详见 [Release 待办](RELEASE.md#当前冻结候选与发布者待办)。
+Beta 2 使用 build 9。此前 build 8 的 AltStore 安装、启动与 Refresh All 已在 2026-10-12 核对，后台刷新开关由使用者确认开启，尚未观察实际后台续签周期。这些记录不代替 build 9 公开包验收。当前包的完整真人验收、Developer ID 公证下载与 TestFlight 验收仍待完成，详见[真人验收清单](试用验收清单.txt)。
 
 ## 应用任务与边界
 
@@ -12,7 +12,7 @@ Beta 2 使用 build 9；本机开发版 build 8 的 AltStore 安装、启动与 
 |---|---|---|
 | **PowerPoint** | 在“绘图 › 笔”中用 Pencil 写入；手指操作界面、双指滚动；公开视图缩放 | 开发者有原生墨迹保存、退出重开证据。当前完整文稿任务需在第二套设备确认。缩放可能需要“自动化”权限；公开接口或滑块不可用时使用应用比例控件。 |
 | **GoodNotes for Mac** | 文稿内 Pencil 书写、普通双指滚动、连续捏合；点工具栏选笔/颜色/橡皮 | 用户确认当前基线普通滚动与连续缩放可用；曾有书写保存重开证据。需要唯一且激活的文稿内容区；文字编辑、菜单、弹窗或歧义焦点时不承诺缩放，回到文稿后重试。工具由应用界面选择。 |
-| **Ecru** | 配套 PDF 文稿中 Pencil 书写、双指连续缩放与二维平移 | 2026-10-11 实体 iPad Air 5 的 USB 操作获用户确认；Ecru 独立进程回放有缩放、锚点、取消和 Pencil 抢占证据。当前精确适配 `local.leafink.reader.development` / `local.ecru.reader.development` 且 bridge v1 的配套构建；本包不包含 Ecru，应由维护者单独确认提供。Wi-Fi、第二套设备和本候选包完整文稿任务仍待验收，见 [Ecru 说明](ECRU.md)。 |
+| **Ecru** | 配套 PDF 文稿中 Pencil 书写、双指连续缩放与二维平移 | 2026-10-11 实体 iPad Air 5 的 USB 操作获用户确认；Ecru 独立进程回放有缩放、锚点、取消和 Pencil 抢占证据。需要带 bridge v1 的指定配套构建；本包不包含 Ecru，应由维护者单独确认提供。Wi-Fi、第二套设备和本候选包完整文稿任务仍待验收，见 [Ecru 说明](ECRU.md)。 |
 | **Preview** | PDF 既有标注工具、点按、滚动与公开缩放 | 曾有部分 PDF 标注保存重开 spike；不是完整逐笔持久化验收。实际 PDF、标注模式和缩放仍需真人确认。 |
 | **Safari** | 网页浏览、点击、滚动与页面缩放 | 使用应用公开菜单/缩放能力；完整实际页面体验仍需确认。不是网页手写保存工具。 |
 | **Chrome** | 网页浏览、点击、滚动与页面缩放 | Chrome 本地诊断页曾获 iPad 双指滚动/缩放真人确认；不同网页与第二套设备仍需确认。不是网页手写保存工具。 |
@@ -26,7 +26,7 @@ Beta 2 使用 build 9；本机开发版 build 8 的 AltStore 安装、启动与 
 - **自动切换**：USB 优先；插拔线后有恢复过程，当前手势会安全结束，恢复后重新落笔。断线输入不会补送。
 - **前台与权限**：Mac PadInk 和目标应用都要运行；iPad PadInk 保持前台、屏幕解锁。Mac 屏幕录制用于显示画面，辅助功能用于输入，PowerPoint 缩放另可能需要自动化授权。
 - **本轮试用**：Mac 为 ad-hoc 签名的未公证 DMG，iPad 由官方 AltStore Classic 安装独立 IPA 并续签；使用者无需 Xcode，免费签名约 7 天。先验收 USB 路径。安装和更新见 [AltStore 安装说明](AltStore安装说明.txt)，逐项结果见[真人验收清单](试用验收清单.txt)。
-- **后续正式分发**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；目前尚未完成这些 Apple 分发步骤。正式分发不以使用者每周重签为支持条件；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
+- **后续 Apple 分发渠道**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；目前尚未完成这些 Apple 分发步骤。这些渠道无需使用者每周重签；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
 
 ## 设备组 A — 开发者
 
@@ -53,16 +53,16 @@ Beta 2 使用 build 9；本机开发版 build 8 的 AltStore 安装、启动与 
 
 ## 设备组 B — 第二位使用者
 
-有第二位使用者时补全实际环境，并照[安装与首次使用指南](使用者安装指南.md)完成最短真人验收。目前为 **UNKNOWN / 未验收**，不阻塞 RC 基础设施。正式发行用户无需自己的开发团队。
+有第二位使用者时补全实际环境，并照[安装与首次使用指南](使用者安装指南.md)完成最短真人验收。目前为 **UNKNOWN / 未验收**，不阻塞 RC 基础设施。公开包使用者无需自己的开发团队。
 
 | 项 | 值 |
 |---|---|
 | Mac / macOS / Xcode | UNKNOWN |
 | iPad / iPadOS / Pencil | UNKNOWN |
-| 安装渠道 / 身份 | UNKNOWN；本轮为 Mac 未公证测试包 + AltStore Classic；正式候选另用公证 Mac 包 + TestFlight |
+| 安装渠道 / 身份 | UNKNOWN；本轮为 Mac 未公证测试包 + AltStore Classic；后续公证 / TestFlight 渠道单独验收 |
 | 应用版本与实际任务 | UNKNOWN |
 | 从零安装、权限、配对、两端诊断 | 未验收 |
-| 覆盖升级后身份/配对保留 | 正式签名与第二套设备未验收；不删除 App，正式身份变化时重新授权配对 |
+| 覆盖升级后身份/配对保留 | 正式签名与第二套设备未验收；不删除 App，账号、团队或渠道变化时单独验收授权配对 |
 
 ## 系统下限与尚未完成的验证
 
