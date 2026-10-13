@@ -1,10 +1,12 @@
 # PadInk 发布支持范围
 
-本轮版本为 **0.3.0 Beta 2（build 9）测试版**，下载入口见 [发布页](https://github.com/double-u-zw/PadInk/releases)；该候选包的真人验收尚待完成。当前开发者设备已有 USB / Wi-Fi、自动切换、Pencil / Touch 和 GoodNotes 连续缩放的使用记录；2026-10-11 的 Ecru USB 实测记录见下表。以下表格说明实际支持范围与尚未验证的边界；正式 Developer ID / TestFlight 分发、最低系统和第二套设备仍需单独验证。
+本轮版本为 **0.3.0 Beta 3（build 11）测试版**，下载入口见 [发布页](https://github.com/double-u-zw/PadInk/releases)；该候选包的真人验收尚待完成。当前开发者设备已有 USB / Wi-Fi、自动切换、Pencil / Touch 和 GoodNotes 连续缩放的使用记录；2026-10-11 的 Ecru USB 实测记录见下表。以下表格说明实际支持范围与尚未验证的边界；正式 Developer ID / TestFlight 分发、最低系统和第二套设备仍需单独验证。
 
 本次对外发布的两端都叫 PadInk。Mac 安装包分别提供 arm64（Apple Silicon / M 系列）与 x86_64（Intel），iPad IPA 共用；Intel 实机仍未验证。
 
-Beta 2 使用 build 9。此前 build 8 的 AltStore 安装、启动与 Refresh All 已在 2026-10-12 核对，后台刷新开关由使用者确认开启，尚未观察实际后台续签周期。这些记录不代替 build 9 公开包验收。当前包的完整真人验收、Developer ID 公证下载与 TestFlight 验收仍待完成，详见[真人验收清单](试用验收清单.txt)。
+Beta 3 使用 build 11。此前 build 8 的 AltStore 安装、启动与 Refresh All 已在 2026-10-12 核对，后台刷新开关由使用者确认开启，尚未观察实际后台续签周期。这些记录不代替 build 11 公开包验收。当前包的完整真人验收、Developer ID 公证下载与 TestFlight 验收仍待完成，详见[真人验收清单](试用验收清单.txt)。
+
+2026-10-13，维护者的 PadInk Dev build 10 已通过 USB 原位更新，设置与原配对保留；USB 视频修复在现有设备运行，维护者用 Ecru 激光笔测试后反馈未见问题。这不代替 Beta 3 / build 11 对外身份、第二套设备、Intel 或完整长时间文稿验收。
 
 ## 应用任务与边界
 

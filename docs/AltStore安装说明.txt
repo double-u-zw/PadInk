@@ -1,7 +1,7 @@
-PadInk 0.3.0 Beta 2 / build 9 — 安装步骤
+PadInk 0.3.0 Beta 3 / build 11 — 安装步骤
 
-本次双端版本为 0.3.0 / build 9。安装完成后请阅读同目录“使用教程.md”。
-本包是对外发布的 PadInk，Beta 2 表示本次发布的测试阶段。尚未完成本构建完整真人验收；版本也可在 VERSIONS.json 核对。
+本次双端版本为 0.3.0 / build 11。安装完成后请阅读同目录“使用教程.md”。
+本包是对外发布的 PadInk，Beta 3 表示本次发布的测试阶段。尚未完成本构建完整真人验收；版本也可在 VERSIONS.json 核对。
 下载：https://github.com/double-u-zw/PadInk/releases
 反馈：https://github.com/double-u-zw/PadInk/issues
 本套新包的真人验收待完成；请先用 USB 完成安装与一份真实文稿，再填写“真人验收清单.txt”。
@@ -10,10 +10,10 @@ PadInk 0.3.0 Beta 2 / build 9 — 安装步骤
 工程最低版本为 macOS 14 / iPadOS 17；目前真机记录为 Apple Silicon Mac / macOS 27.0.1、
 iPad Air 5 / iPadOS 27.0.1。Intel、最低系统和其他设备尚未验收。
 使用者无需 Xcode 或付费开发者会员。VPN 可以保持开启；不同网络配置仍需实际测试。
-本次两端都安装 PadInk，版本为 0.3.0 / build 9；只需按 Mac 芯片选择下载。
+本次两端都安装 PadInk，版本为 0.3.0 / build 11；只需按 Mac 芯片选择下载。
 在“关于本机”确认芯片：Apple M 系列选 arm64，Intel 选 x86_64。
-Beta 2 分为 M 系列（arm64）和 Intel（x86_64）；Intel 包已构建，尚未真机验证。
-首次推荐下载完整 ZIP：PadInk-0.3.0-b9-Beta-arm64.zip 或 PadInk-0.3.0-b9-Beta-x86_64.zip。
+Beta 3 分为 M 系列（arm64）和 Intel（x86_64）；Intel 包已构建，尚未真机验证。
+首次推荐下载完整 ZIP：PadInk-0.3.0-b11-Beta-arm64.zip 或 PadInk-0.3.0-b11-Beta-x86_64.zip。
 两份 ZIP 都含相同的 iPad IPA，选择你的 Mac 芯片即可，不用同时下载。
 也可只下载对应 DMG 和共用 PadInk-AltStore.ipa；官方 AltServer 另行下载。
 
@@ -92,6 +92,9 @@ iPad：设置 → 诊断 → 生成 iPad 诊断 → 分享诊断文件。
 
 当前已有记录：此前构建已在维护者现有 iPad 完成官方安装和原位续签，设置、配对保留，
 USB 画面与 Pencil 正常；Ecru 有 USB 真机操作确认。上述记录不代表本套新包已通过。
+2026-10-13，维护者的 PadInk Dev build 10 已经 USB 原位更新并保留设置和原配对，
+双方 USB 连接与画面输出已核对；维护者在 Ecru 激光笔测试后反馈未见问题。
+这是本次视频修复的已有设备记录，不代表 build 11 对外身份的首次安装或第二套设备已验收。
 
 官方帮助（2026-10-12 核对）：
 安装：https://faq.altstore.io/altstore-classic/how-to-install-altstore-macos
@@ -100,9 +103,11 @@ AltStore 过期：https://faq.altstore.io/altstore-classic/altserver
 Mac 首次打开：https://support.apple.com/zh-cn/102445
 
 七、尚未验证与源码
-本次 build 9 公开包的独立首次安装、完整文稿任务、30–60 分钟使用、Wi-Fi 切换/恢复、
+本次 build 11 公开包的独立首次安装、完整文稿任务、30–60 分钟使用、Wi-Fi 切换/恢复、
 自动后台续签、实际过期恢复和覆盖升级仍待真人验收。Intel 实机、最低系统与第二套设备未验证。
 此前 build 8 的安装、启动及 Refresh All 成功记录，仅证明该构建和现有设备。
 当前 Mac 包未公证；iPad 采用 AltStore，尚无 TestFlight 或 App Store 入口。
-Beta 2 当前源码、工程、测试和文档公开于 https://github.com/double-u-zw/PadInk ，采用 MIT 许可证。
+本次 Beta 3 仅公开安装包与使用者文档；本轮修复源码未发布。
+既有 Beta 2 源码公开于 https://github.com/double-u-zw/PadInk ，采用 MIT 许可证。
+GitHub 自动生成的 Source code 附件仍为已有公开基线，不能用来复现本次修复包；安装请下载对应芯片的 Beta ZIP。
 本机签名配置、证书、凭据、设备备份、诊断和旧本机历史不公开。
