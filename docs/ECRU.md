@@ -2,6 +2,8 @@
 
 PadInk 的 Ecru 适配使用 Ecru 原生 PDFKit 缩放，不使用 Goodnotes 的 Command+像素滚轮换算，也不注入私有 magnify 事件。
 
+当前日用配套构建查询（2026-10-13）：Ecru Dev **0.5.0 / build 21**，`PadInkGestureBridgeVersion = 1`。这是配套版本标识，不自动扩大既有验收范围；Ecru 须单独安装，PadInk 安装包不包含它。其他 Ecru 构建需核对下述 bundle ID 与 bridge v1。
+
 ## 输入路径
 
 - iPad `GestureFSM` 保留首次双指中心；捏合确定后发送逐次 `log(distance / previousDistance)`。距离不变、中心移动时仍发送零缩放量的 magnify 更新。

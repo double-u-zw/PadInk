@@ -1,20 +1,83 @@
 # PadInk 发布候选与分发流程
 
-命令在源码仓库根目录执行。本文描述候选准备、签名、公证、安装验证和发行操作；本地签名覆盖安装与 Developer ID / TestFlight 分发分别核验。对外发布的正式版统一为 PadInk（包括 Beta/RC），本机源码开发与内部自用为 PadInk Dev；公开下载不提供开发版。Mac 安装路径分别为 `/Applications/PadInk.app` 与 `/Applications/PadInk Dev.app`。
+命令在源码仓库根目录执行。本文描述候选准备、签名、公证、安装验证和发行操作；本地签名覆盖安装与 Developer ID / TestFlight 分发分别核验。对外发布的正式版统一为 PadInk（包括 Beta/RC），本机源码开发与内部自用采用 development 身份，界面同样显示 PadInk；公开下载不提供开发身份。2026-10-14 已将日用 Mac 统一为 `/Applications/PadInk.app` 的正式 RC build 12，与 iPad TestFlight build 12 配套；旧开发版与重复可启动副本已移至废纸篓。现有配对与权限数据保留，发行恢复材料仍在本机。
+
+当前 `main` 公开最新源码、测试、工具和文档；本次源码提交不新增安装包 Release、不修改历史 tag、不提交 Apple 审核。已安装 build 12 的原冻结提交仍为 `e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89`，App 输入摘要为 `6d912b4a07671f2be558fcb1a8678232667adf3d97454d54bb47bf7ff7929c4e`；公开提交包含后续工具和文档整理，不能替代原安装包的签名与构建身份记录。
+
+## App Store 正式发行（当前本地候选 0.3.0 / build 12）
+
+本轮目标：Mac 仅 Apple Silicon（M 系列 / arm64）；已生成的 Intel 签名包只作私有历史留存，不提交公证、不进入当前分发材料。公开 Beta 3 的双架构历史资产保持原样。iPad 经 App Store 安装，Mac 经 GitHub Release 提供 Developer ID 签名且已公证的辅助端。首发必要链路是普通 USB 数据线；现有 Wi-Fi 保留，但无线切换不阻挡 USB 首发，商店文案不承诺 Wi-Fi。build 12 是当前正式渠道的本地准备目标，arm64 已通过 Developer ID 公证、附票据和 Gatekeeper；正式 iPad 已签名，TestFlight 上传按下方实时记录区分，尚未提交 App Store 审核。公开 Beta 3 / build 11 是另一分发状态（AltStore + Mac ad-hoc），已有资产保持冻结。历史 build 10 工程/商店资料保留原版本；当前可维护素材在 `engineering/app-store/`，冻结历史输出在 `build/app-store/materials-build10/`。2026-10-14 维护者确认会员注册已通过；正式个人团队及 Developer ID Application / Apple Distribution 私钥身份已在本机核对。正式标识由维护者确认采用 com.padink.mac / com.padink.ipad；发行配置独立于日用配置。正式 iPad App Store profile 与 Apple Distribution 导出已通过；arm64 公证已 Accepted，票据和 Gatekeeper 通过。App Store Connect 免费 App 协议有效，PadInk 记录已创建（com.padink.ipad，SKU padink-ipad，主要语言简体中文）；版本草稿为 0.3.0，设为手动发布。用户已授权 build 12 TestFlight 上传，上传/处理/本人 USB 验证保持各自独立状态。不改变现有开发签名、安装或信任。
+
+维护者已完成此前 RC1 的 USB 真人使用验收（2026-10-13 在当前会话确认）；保留该基线，当前只补视频反馈、Pencil 抬笔/取消及滚动修复的相关回归。该确认不扩展为未记录的逐项结果、外部首装或正式签名渠道通过。Wi-Fi、第二套设备和最低系统继续标为各自未验证；Intel 不在本轮正式候选范围，均不作为本轮发行工程收尾的先决条件。
+
+### 可行性与实际阻碍
+
+| 核对项 | 工程结论与提交条件 |
+|---|---|
+| 2.1 完整性 | 无账号/服务器；审核需要真实 iPad、Mac、数据线和可下载的公证辅助端。当前无正式签名实机结果、审核演示视频和商店截图，不能声称可以立即提交。无连接时帮助、设置、隐私政策可访问；没有用演示画面替代真实功能。 |
+| 2.5 API 与构建 | iPad 使用 UIKit / SwiftUI、Network、Metal、VideoToolbox、Security、CryptoKit 等公开框架；不链接 Mac 的 AppKit、ScreenCaptureKit 或 USB 私有实现。仅 iPad、iPadOS 17+；当前 Xcode 27 / SDK 27 满足上传最低 Xcode 26 / SDK 26 要求。无下载执行代码、广告、分析 SDK、背景常驻权限、ATS 全局豁免或 iPad 自定义 entitlement。 |
+| USB | iPad 的公开 NWListener 只绑定 127.0.0.1:42371；Mac 通过系统 `/var/run/usbmuxd` 的 ListDevices / Connect 到达该监听。未调用 lockdownd 调试服务、DeveloperDiskImage、debugserver、Xcode、AltStore；Mac 只选择 ConnectionType=USB。usbmuxd 是未公开接口，保留在独立 Mac 辅助端仍有系统兼容风险，不能推断为 Apple 对正式签名 USB 可用性的保证。必须通过关闭开发者模式的 TestFlight 实测。 |
+| 4.2.3 / 4.2.7 | 4.2.3 的另一 App 依赖规则确实需要审核解释；外部 Mac 辅助端不是自动免责，也不是已证明的必拒原因。PadInk 采集主显示器（SCContentFilter display），是通用主机画面镜像，兼容策略只适配输入，不提供特定云应用、软件目录、购买解锁或 iOS 模拟商店。4.2.7 针对特定软件镜像的条件不能不加区分地套成所有 USB 镜像必拒；USB 也不能被称作已经满足其 LAN 条件。向 Apple 如实说明直连用户自己的 Mac，最终归类以审核为准。 |
+| Mac 安装与权限 | 非 Mac App Store，保留非 sandbox 和 hardened runtime。屏幕录制用于主屏镜像；辅助功能用于公开 CGEvent / AX 输入；仅 PowerPoint 缩放需要 Apple Events 自动化 entitlement。不给辅助端 root、kext、私有 HID 能力或远程安装功能。正式下载首次启动需实测 Gatekeeper、公证票据、屏幕录制和辅助功能授权、拒绝及恢复。VPN 保持开启。 |
+| 5.1 隐私 | 两端可打开政策；实时画面/输入不归档、不上传维护者；USB 有配对认证但应用帧未额外加密，Wi-Fi 使用系统 TLS。本机偏好、Keychain 身份/信任和有限诊断；主动导出、分享另行披露。privacy manifest 声明 UserDefaults CA92.1、BootTime 35F9.1/8FFB.1、容器文件元数据 C617.1。无 tracking/第三方 SDK；不能把 manifest 当成 App Privacy 问卷的替代。 |
+| 加密与依赖 | SwiftPM 无外部依赖，App 不携带 Replay / WebProbe 工具；使用系统 CryptoKit 的 X25519、HKDF、SHA256、HMAC 和 Security / Network 的 TLS PSK，未嵌入 OpenSSL 或自实现算法。iPad `ITSAppUsesNonExemptEncryption=NO` 表示当前仅系统加密服务的文档豁免，不表示未使用加密；发布者核对所选地区的出口/进口及可能申报要求，变更加密依赖后重新审查。 |
+
+### 身份、数据和配对
+
+正式 namespace 不变：USB 42371、Bonjour `_pnk2._tcp`、Keychain service `dev.padink03.trust`；Dev 的 42372 / `_pnk2-dev._tcp` / `.trust.development` 保持隔离。协议与配对算法没有变更。
+
+当前个人源码配置的 iPad ID 是 `dev.padink03.xuk77wlk49.ipad.development`（正式 variant 没有 `.development`）；历史 AltStore 基础 ID 是 `dev.padink.altstore.ipad`，AltStore 重签可能改写实际标识。提交前从各个**实际安装包**的 Info.plist / profile / 签名读取真实 Bundle ID、Team ID、App ID prefix、Keychain group，不能按源码值推断侧载结果。当前正式 ID 已由维护者确认采用 `com.padink.mac` / `com.padink.ipad`，不自动沿用其他团队 ID。
+
+Keychain account 包含 bundle ID，iPad 默认 access group 受签名 App ID prefix 限制。Dev/AltStore/另一团队转 App Store **不能保证**容器偏好或密钥迁移；默认按独立安装和重新配对处理，保留旧 App，确认新 App 可用后再自行处理旧安装。不要拷贝私钥、扩大共享 Keychain 或清空全局信任。新 Mac 签名身份也可能需要重新授权 TCC / Keychain。正式团队同 Bundle ID 的 TestFlight → App Store / 正式覆盖升级才是应验证的保留设置与配对路径。文稿由 Mac 目标应用保存，不存于 iPad PadInk 容器。
+
+同一上传二进制依据系统 receipt 路径区分 TestFlight 与 App Store 安装说明（不是购买验证）；生产 receipt 显示正式渠道。TestFlight / App Store 不解析并发送 profile 到期提醒；免费个人安装保留原提醒。TestFlight 90 天测试有效期由 TestFlight 管理。
+
+### 商店元数据与审核说明草稿
+
+- 名称：PadInk；副标题：用 Apple Pencil 操作你的 Mac；首选类别：效率；关键词：手写,触控,镜像,批注,Mac,Apple Pencil,USB。
+- 描述：PadInk 将你自己的 Mac 主屏显示到 iPad，让你用 Apple Pencil 书写，用手指点击、拖动、双指滚动和缩放。文稿由 Mac 上的目标应用保存。需要 macOS 14 或更新版本的 Mac、单独安装的 PadInk Mac 辅助端、iPadOS 17 或更新版本及 USB 数据线。手写需要兼容的 Apple Pencil。Mac 首次使用需允许屏幕录制与辅助功能；部分应用缩放还需允许自动化。iPad 正式版由 App Store 安装，无需开发者模式、AltStore、Xcode 或签名续期。支持范围以实际验收为准。
+- 政策 URL：https://github.com/double-u-zw/PadInk/blob/main/docs/PRIVACY.md；支持 URL：https://github.com/double-u-zw/PadInk/issues。当前工作树政策/UI 需随批准的源码发布到该地址后再验证；现有公开页面仍是旧版。确认未登录可访问，不把本地文件 URL 填入商店。
+- App Privacy 初步答案：不收集数据（画面与输入仅在用户自有设备间实时处理；没有向开发者或 SDK 自动传输）。必须同时确认可选诊断求助符合 Apple 对可不披露的客服数据条件；不符合时在 App Store Connect 披露相应数据，不能机械勾选。无账号，无账户删除入口，无 ATT/广告标识符。
+- 年龄分级按 Apple 当前问卷据实填写；不用“儿童”分类，不因本工具可显示用户桌面就捏造内容库。选择销售地区前核对 DSA 交易者信息及各地区手续（包括拟在中国大陆提供时所需备案）。价格和法律联系信息由账户持有人填写。
+
+审核备注英文正文（提交前追加**这次已公证 Mac 资产的精确下载 URL、真实硬件演示视频 URL、审核联系方式**，未准备这些材料不可提交）：
+
+> PadInk is a native iPad client that mirrors the primary display of the user's own Mac and sends Apple Pencil and touch input back to that Mac. Mac applications execute and save documents on the Mac. PadInk does not provide a cloud computer, application catalog, software purchasing interface or an iOS-like remote environment. A separately installed Mac companion is required for screen capture and input; it is distributed through GitHub Releases with Developer ID signing and Apple notarization. No additional iPad app, developer mode, Xcode or sideloading tool is required for the distributed iPad client. Please connect the unlocked iPad to the Mac with a USB data cable, open both clients, allow macOS Screen Recording and Accessibility, and approve the device pairing on both screens. Open a document and select a pen tool on the Mac, then test Apple Pencil writing and two-finger scrolling/zooming on the iPad. There is no account or login. Privacy and connection help are available in Settings before connecting. The attached video demonstrates this exact candidate on real hardware.
+
+备注中的“无需开发者模式”及视频说明只能在本候选真正完成对应实测后使用；目前为预备文案。审核视频约 2–3 分钟：从 TestFlight 安装、已关闭开发者模式的设备开始，展示 Mac 签名/权限、Finder 信任（若系统询问）、USB 双端配对、主屏含两个不同应用、Pencil 写擦、双指滚缩、保存重开、拔线恢复和忘记设备。遮掉私人文稿与账户；不要用 fixture 截图或旧 build 冒充。商店截图另取真实 iPad 使用画面；审核附件可展示 Mac 配置，App Preview 遵守 iPad App 画面要求。
+
+### 会员生效后与提交前的必要验收
+
+1. 账户持有人确认会员/协议生效、团队、稳定双端 Bundle ID，创建 iPad App Store Connect 记录。确认价格、地区、隐私/年龄/加密问卷、法律联系与审核联系人。准备 Apple Distribution + App Store profile、Developer ID Application + 本机 notarytool profile；**经用户确认后**才填写/使用正式身份，不覆盖 `Signing.local.xcconfig`。
+2. 检查本改动并固定源码，准备新 clean RC。沿用下文 `rc-release.py prepare/mac/ipad/check`：Mac 公证会上传到 Apple；iPad 只导出本地上传候选，`destination=export` 不上传、不审核、不发布。导出检查 profile、二进制实际 entitlements、团队、get-task-allow=false、dSYM、SDK 和双端源码身份。需要首次 TestFlight 上传时另按用户授权操作；不自动提交 Beta Review / App Store Review。
+3. **核心发行门槛**：TestFlight 新安装，iPad 关闭开发者模式；Mac 在退出 Xcode/AltServer 后独立运行（无需卸载），不挂载开发镜像、不启动调试服务，VPN 保持开启。用普通数据线完成 Finder 系统信任、双端配对、画面、Pencil、双指和文稿保存。记录实际团队/ID/版本，拔插、前后台、锁屏恢复以及 已有 RC1 USB 基线保留，先补变化与渠道差异，有退化迹象再补长时间使用。若 USB 失败，先诊断 usbmux 普通 Connect 与 loopback 到达情况；不以开发安装、Wi-Fi 或模拟器通过作为替代。
+4. 从下载的已公证 Mac 资产安装，确认 Accepted + staple + Gatekeeper；权限拒绝/恢复、重启 App 和配对可用。本轮只验证实机 Apple Silicon；Intel 不在本轮正式候选范围，最低系统仍明确未验收，不扩张兼容承诺。
+5. 从个人版本迁移和正式同身份升级分别验收；个人迁移允许重新配对，同正式身份覆盖更新应保留开关/配对。正式 Mac 与正式 iPad 相连，Dev 配对不串用；忘记设备后不得继续自动连接。
+6. 政策/支持 URL 与公证下载未登录可用；提交截图、视频和备注对应同一候选。完成当前年龄/加密/地区手续、TestFlight 验收后请求用户最终确认，才提交 App Store 审核；公开发布另行确认。
+
+商店素材与会员生效后命令清单见 [engineering/app-store/START-HERE.txt](../engineering/app-store/START-HERE.txt)。`store-materials.py` 只验证字段与本地素材并打包，不联网、不安装、不签名；`--release <干净候选> --require-ready` 在联系人、正式下载、真人验收与截图待确认时失败。现有公开下载仍为 AltStore/未公证 Beta 3，本地新版政策／支持／安装文案需获得公开更新授权后部署，不需公开本轮源码。
+
+本机检查入口：`PADINK_BUILD_ROOT=build/app-store/check PADINK_BUILD_SIMULATOR=1 ./engineering/scripts/build-and-test.sh`。产物 `build/app-store/check/dd/Build/Products/Release{,-iphoneos}/PadInk.app` 为**未签名**双端 Release，配有 dSYM 和 `store-bundle-check.json`；它们不能代替 TestFlight、公证包或正式上架验收。iPad 模拟器 App 使用本地 ad-hoc 临时签名（不使用证书或更新 provisioning），以支持模拟器 Keychain，位于同一 Products 的 `Release-iphonesimulator/PadInk.app`，模拟器仅用于启动/UI 检查；Metal 呈现回调在模拟器 SDK 不可用时使用 GPU 完成回调，不产生真实显示延迟统计，真机呈现路径保持不变。`check-store-bundle.py` 只作工程预检，不是 Apple 审核、私有 API 完整认证或正式签名证明。
+
+参考： [Apple 当前审核指南](https://developer.apple.com/app-store/review/guidelines/)、[上传 SDK 要求](https://developer.apple.com/news/upcoming-requirements/?id=02032026a)、[required reason API](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)、[系统加密出口合规](https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations)、[App Privacy 定义](https://developer.apple.com/app-store/app-privacy-details/)。规则核对于 2026-10-12；工程可行不等于获准上架。
 
 ## 当前冻结候选与发布者待办
 
-已公开版本为 **0.3.0 Beta 2 / build 9**，本机已安装的 PadInk Dev 仍为 build 8，其 AltStore 安装、启动与手动续签已在 2026-10-12 核对。Beta 2 下载和实际状态以 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.2)为准；build 9 的完整真人验收尚未完成。已冻结的正式 RC 仍为 `build/rc/0.3.0-rc.1/` 的 RC 1 / build 6；下文 RC 2 命令仅为后续示例。Beta 2 公开当前源码快照、测试与工程工具；匹配 dSYM、签名与恢复材料留在本机，不公开未经检查的本机历史。
+2026-10-13 已发布 **[0.3.0 Beta 3 / build 11](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.3)**：M 系列／Intel 的未公证 ad-hoc Mac 测试包、共用 AltStore IPA、校验值与用户文档。535 项 Swift 测试（6 项跳过）零失败，双端 Release 构建与包内身份／校验通过；维护者设备的 Dev build 10 USB 原位更新、设置与原配对保留，Ecru 激光笔试用反馈未见问题。build 11 对外身份、第二套设备及完整长时间文稿仍待真人反馈。原 build 10 App Store 基线与 Beta 2 资产保留。
+
+本次仅发布安装包和用户文档，源码／签名配置／设备备份／诊断／dSYM 未上传；GitHub tag 的 Source code 附件仍为既有公开源码及文档更新。实际构建输入与本机私有快照按包内 source digest 核对，不能把公开 tag 当作本次修复源码。Beta 3 发布时尚无 Developer ID 公证包或 TestFlight / App Store 构建；当时本机两端开发身份保持 build 10，未替换成公开身份。
+
+此前已公开版本为 **0.3.0 Beta 2 / build 9**；截至 2026-10-12 本机已安装的 PadInk Dev 为 build 8，其 AltStore 安装、启动与手动续签已在 2026-10-12 核对。Beta 2 下载和实际状态以 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.2)为准；build 9 的完整真人验收尚未完成。已冻结的正式 RC 仍为 `build/rc/0.3.0-rc.1/` 的 RC 1 / build 6；下文 RC 2 命令仅为后续示例。Beta 2 公开当前源码快照、测试与工程工具；匹配 dSYM、签名与恢复材料留在本机，不公开未经检查的本机历史。
 
 冻结源码与验证无签名构建后，安装分发状态仍为待完成。下面事项由发布者准备账户、提供设备并亲自验收；尚未执行的结果填写“未测”。
 
 | 待办 | 完成标准 |
 |---|---|
 | 当前包的 USB 文稿与稳定性 | 按真人清单 U1–U7 / R1–R4 完成安装、配对、四角定位、写擦滚缩、保存重开、30–60 分钟使用，以及断线、后台、休眠、焦点与权限恢复；记录双端 build/source 和目标应用版本 |
-| Wi-Fi 与切换 | 完成 W1–W2；受限网络按 W3 记录实际结果。USB 结果不能代替 Wi-Fi 结果 |
+| Wi-Fi 与切换 | 不作为 App Store USB 首发门槛；承诺无线功能前再完成 W1–W3，USB 结果不能替代 Wi-Fi 结果 |
 | 应用与设备范围 | 实际使用的应用填写 A1–A5。Intel、最低 macOS 14 / iPadOS 17、第二套设备仍需 E1–E3；未测环境继续注明未验证 |
 | 正式团队与 App ID | 准备有效 Apple Developer 团队，确定稳定的 Mac/iPad bundle ID、iPad App Store Connect 记录，填写 ignored 的 `Config/Release.local.xcconfig`。保留原开发签名配置；不提交证书、私钥或凭据 |
-| Mac 签名公证 | 准备 Developer ID Application 证书及 Keychain 公证 profile；从冻结源码执行 `mac`，核对 Accepted、staple、签名、Gatekeeper 和两份架构包；通过真实下载首次启动再测试权限、USB 与文稿 |
+| Mac 签名公证 | 准备 Developer ID Application 证书及 Keychain 公证 profile；从冻结源码执行 `mac`，核对 Accepted、staple、签名、Gatekeeper 和本轮声明的 arm64 包；通过真实下载首次启动再测试权限、USB 与文稿 |
 | iPad TestFlight | 准备 Apple Distribution / App Store profile；执行 `ipad` 后由发布者上传 App Store Connect，等待处理和所需 Beta Review；从 TestFlight 真正安装并与正式 Mac 配对验收 |
 | 元数据与审核材料 | 填写支持与隐私入口、App Privacy 与加密合规问卷、截图、审核联系方式、配对步骤和演示；准备审核员可下载的公证 Mac 包。按真实行为填写，不以脚本替代问卷判断 |
 | 身份迁移与覆盖升级 | AltStore/个人团队转正式团队单独记录权限、钥匙串与配对变化；首次正式安装后，再对同一正式身份做覆盖更新，核对设置、配对、版本与诊断。不得把首次迁移写成同身份升级通过 |
@@ -38,7 +101,7 @@
 
 两版可同时保留，首次 PadInk Dev 需要独立授权与配对，不拷贝已有版的密钥或设置。双端须选择同一版；芯片包共用该版身份。`release` 指对外 PadInk 的构建身份，`development` variant 指本机 PadInk Dev；渠道 `rc` / `development` / `release` 与 `altstore` / `direct` / `testflight` 是工程元数据。对外名称统一为 PadInk；Beta/RC 表示发布阶段，验收范围按事实说明，不让使用者选择开发版。
 
-Mac 分别构建 arm64 与 x86_64 的单架构 App；文件名带架构，包内二进制与匹配 dSYM 必须核对。AltStore 本地包每版输出两个 DMG、两个含对应 DMG 和共用 iPad IPA 的 ZIP；Developer ID 路径对每个架构分别 archive、签名、公证、附票据并生成 ZIP，只有两份都通过才允许完整公开 staging。正式签名工具只使用正式版身份。
+当前正式候选仅构建 arm64（M 系列）Mac App；文件名、二进制、dSYM 与候选清单声明的架构必须匹配。Developer ID 路径对声明的目标架构 archive、签名、公证、附票据并生成 ZIP，全部声明目标通过后才允许本地公开 staging。历史 AltStore 双架构 DMG/ZIP 保留原记录，Intel 不在本轮候选范围。正式签名工具只使用正式版身份。
 
 例：`PadInk-0.3.0-b7-mac-arm64.dmg`、`PadInk-0.3.0-b7-mac-x86_64.dmg`；开发版为 `PadInk-Dev-0.3.0-b7-mac-arm64.dmg` 与 `...-x86_64.dmg`。选“关于本机”中的芯片：Apple M 系列选 arm64，Intel 选 x86_64。
 
@@ -60,7 +123,19 @@ Ad Hoc 可以不让使用者装 Xcode，但需要维护者登记设备并管理�
 
 免费账号试用另走官方 AltServer / AltStore Classic，不自研认证与签名，保留约 7 天签名期限；流程见安装指南。它与本文 Developer ID / TestFlight 正式发布路径分别验证。不做 Enterprise 对外分发，也不为首个 RC 维护自动更新服务或 Mac App Store 沙盒版本。首次 Mac RC 手动覆盖安装，后续有实际用户规模再决定自动更新。
 
-## 本轮公开测试版（0.3.0 Beta 2 / build 9）
+## 当前候选、冻结材料与检查分层
+
+正式团队证书已可用时可先 `mac --sign-only`，生成 `maintainer-mac-notary-candidate` 私有资产，明确未公证且不是公开安装包；无需公证凭据，也不上传 Apple。获得公证上传授权、设置 `PadInk-Notary` 凭据后，`notarize` 复用这些精确签名字节，Accepted 后附票据生成公开角色资产；拒绝或失败保持私有候选，不重新构建、不冒充通过。iPad `ipad` 只导出 Apple Distribution 上传候选，ASC 上传另需授权。
+
+
+- 当前公开安装包是 Beta 3 / build 11，公开 tag `v0.3.0-beta.3` 指向文档/公开基线提交 `281148b50e39a90ceec513bf53d3ca4531bc8a48`；实际 App 构建基线是 `5b08d4130c388cf0571ba1eaf742fd8823e50803`，包含私有未提交修复，App 输入摘要为 `331b3422317329d12cfaf1fb9db55750cb807fb8784b1ca6fb12070b4e9d2480`。公开 tag 不能复现这个安装包。
+- 精确源码 ZIP 已保存在本机 `build/public-beta/0.3.0-b11-beta.3/private-source/`；同目录旁 `private-retention/` 保存公开资产校验、两种 Mac 和 iPad 的匹配 dSYM、构建覆盖设置与二进制中的 SDK/Xcode 信息。只补缺少的符号留存，不重建已发布包。该私有目录不进入 Git 或公开资产。
+- 当前正式候选递增至 build 12，承载已更新的新图标及统一 PadInk 名称，既有输入/会话/视频机制沿用当前源码。build 11 安装包和商店输出保持冻结。build 12 在本机独立的私有干净 checkout 冻结为提交，不改写日用工作区历史，不推送；源码 ZIP 与实际签名输入绑定。
+- 日常入口 `build-and-test.sh` 校验当前素材版本/目标、回归及双端无签名构建，账户/真实截图待确认不会冒充通过，也不阻塞本地工程检查。`PADINK_RELEASE_CHECK=candidate PADINK_FROZEN_RELEASE=<冻结目录>` 进一步绑定完整源码；`submission` 再要求干净正式候选及完整商店字段。错误不会被跳过。
+- `store-materials.py --history build/app-store/materials-build10` 只核对历史字节，禁止与 `--out`、`--release` 或 `--require-ready` 混用。当前导出需 `--release <冻结目录> --out <build 下新目录>`；提交检查需 `--release <干净候选> --require-ready`。
+- `.github/workflows/check.yml` 只准备在已获授权的仓库使用，当前不推送。CI 检查事件 checkout（PR 为合并提交），记录 commit、App 输入摘要和完整工程树摘要；云端不执行物理 GPU/codec/SCK 实验，不使用签名秘密或上传产物。旧公开基线的绿色结果只属于该基线，不能替代当前私有树、本机包或真人结论。
+
+## 历史公开测试版（0.3.0 Beta 2 / build 9）
 
 `double-u-zw/PadInk` 从 Beta 2 起公开经检查的当前源码、测试、工程工具、文档和安装包。Beta 2 以 GitHub pre-release 发布；实际状态见 [Beta 2 发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.2)，反馈用 [Issues](https://github.com/double-u-zw/PadInk/issues)。Beta 1 / build 5 的旧资产保留，不重新生成或覆盖。
 
@@ -96,11 +171,11 @@ python3 engineering/scripts/rc-release.py check build/trial-private/0.3.0-b7-tri
 - iPad 使用公开 Network.framework 与本地 loopback 监听；审核需说明它是 Mac 的手写/触控伴侣。App Review 的 2.5.1 与 4.2.3(i) 仍适用，需提供可下载公证 Mac 包、权限说明、配对步骤与演示视频，使审核员能检查完整功能；不承诺 TestFlight / App Store 必然通过。[审核规范](https://developer.apple.com/app-store/review/guidelines/)
 - Wi-Fi 用 Network.framework 的 TLS 1.2 PSK，配对和认证用 CryptoKit。ATS 只约束 URL Loading System，不给低层 Network.framework 提供自动保护；当前不需要为了上传增加 `NSAllowsArbitraryLoads`，也不为发布重设计 TLS。[ATS 说明](https://developer.apple.com/documentation/security/preventing-insecure-network-connections)
 - 两端有 privacy manifest：UserDefaults 用于本 App 设置；单调时钟用于计时与应用内事件时间。manifest 不是 App Store 隐私问卷的替代品。应用传给已配对 iPad 的画面与输入、主动提交的诊断、TestFlight 自身反馈必须在说明中如实区分。[Required reason APIs](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)
-- TLS、ECDH/HKDF/HMAC 都涉及加密。发布者在 App Store Connect 回答 export compliance 问卷，确认地区和是否需要文件；脚本不会猜测 `ITSAppUsesNonExemptEncryption = NO`，不能因为用了 CryptoKit 就跳过判断。[Apple 加密申报](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance)
+- TLS、ECDH/HKDF/HMAC 都涉及加密。发布者在 App Store Connect 回答 export compliance 问卷，确认地区和是否需要文件；当前 iPad 已按仅使用系统加密服务配置 `ITSAppUsesNonExemptEncryption = NO`；发布者仍需核对问卷、地区及依赖变化，不能因该字段跳过判断。[Apple 加密申报](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance)
 
 ## 版本、源码与兼容约定
 
-`Config/Version.xcconfig` 是双端版本的唯一来源：当前配置为 `MARKETING_VERSION = 0.3.0`、`CURRENT_PROJECT_VERSION = 9`、源码开发默认渠道 `development`，候选脚本构建时明确覆盖为 `rc`。正式 Apple 版本字段不带 `-rc`；发布标题可使用 `0.3.0 RC 2`，维护者批准后 Git tag 可使用 `v0.3.0-rc.2`，发布 tag 在实际发布时创建。
+`Config/Version.xcconfig` 是双端版本的唯一来源：当前配置为 `MARKETING_VERSION = 0.3.0`、`CURRENT_PROJECT_VERSION = 11`、源码开发默认渠道 `development`，候选脚本构建时明确覆盖为 `rc`。正式 Apple 版本字段不带 `-rc`；发布标题可使用 `0.3.0 RC 2`，维护者批准后 Git tag 可使用 `v0.3.0-rc.2`，发布 tag 在实际发布时创建。
 
 每次上传 App Store Connect 使用新的 build number；同一候选的 Mac 和 iPad 使用同一 version/build/源码 revision 与 digest。`source commit` 标识 Git revision；SHA-256 digest 标识参与构建的源码内容。未提交 diff 用明确的 dirty 预览身份，不冒充可复现的正式 RC。版本/渠道/发行方式与完整源码身份在 About / 设置、诊断及 manifest 中可查。
 
@@ -167,7 +242,7 @@ Release 用户入口保留连接状态、权限、配对、版本与主动导出
 
 ## 发布者需要准备的 Apple 资源
 
-截至 2026-10-07 核对，Apple 自 2026-04-28 起要求 App Store Connect 上传使用 Xcode 26 或更新版本及 iOS / iPadOS 26 或更新 SDK；自 2026-09-09 起要求 iOS / iPadOS deployment target 不低于 iOS 13。本机实际 Xcode 27.0（27A266a）、iphoneos SDK 27.0，项目 iPadOS 最低 17，符合这两项现行门槛；这不表示已经通过上传验证或审核。发布时重新核对 [Apple 上传要求](https://developer.apple.com/news/upcoming-requirements/)，不将日期或 SDK 规则硬编码进发布脚本。
+截至 2026-10-07 核对，Apple 自 2026-04-28 起要求 App Store Connect 上传使用 Xcode 26 或更新版本及 iOS / iPadOS 26 或更新 SDK；自 2026-09-09 起要求 iOS / iPadOS deployment target 不低于 iOS 13。本机实际 Xcode 27.0（27A266a）、iphoneos SDK 27.0，项目 iPadOS 最低 17，符合这两项现行门槛；这不表示已经通过上传验证或审核。发布时重新核对 [Apple 上传要求](https://developer.apple.com/news/upcoming-requirements/)，发布脚本目前执行 SDK 26+ 的最低门槛预检；Apple 要求变化时同步更新预检。
 
 1. Apple Developer Program 会员团队，具有所需账号角色；确认个人或组织主体并完成协议。免费 Personal Team 不提供公证、TestFlight 或 App Store Connect。[账户区别](https://developer.apple.com/help/account/basics/about-your-developer-account)
 2. 选择并登记长期固定的 Mac/iPad bundle ID 与付费 Team ID；iPad 在 App Store Connect 创建记录，签名方式由 sample 配置与本机 Xcode 管理。
@@ -187,3 +262,11 @@ Release 用户入口保留连接状态、权限、配对、版本与主动导出
 6. 公共资产检查、Release Notes 的实际验收/安装状态更新后创建 GitHub pre-release。可邀请独立用户时再补体验；没有第二用户不使第 1–5 步停止。App Store 正式上架与自动更新留在 RC 之后。
 
 可交付的正式签名候选还需付费团队与正式身份、签名公证和 TestFlight 处理，以及对应包的实际安装、覆盖更新和文稿验收。
+
+### 2026-10-14 正式候选实际渠道状态
+
+0.3.0 build 12：Mac 仅 arm64，原提交已 Accepted 并附公证票据，codesign / stapler / Gatekeeper / dSYM 匹配通过。PadInk App Store Connect 记录已创建，版本草稿 0.3.0，手动发布。Xcode Organizer 已成功上传同一冻结 archive 的 build 12，Apple TestFlight 已列出 0.3.0 (12)，有效期 90 天；处理完成不代表已在 iPad 安装或完成 USB 验收。未提交 App Store / Beta 审核，未公开发布。
+
+实际上传前沿用现有正式团队签名，不重新编译、不自动管理版本/build。重新签名使 ZIP 与签名部分 SHA 改变，去签名后的可执行字节、Info.plist 与原本地导出完全一致，UUID 仍匹配原 dSYM。原导出仅保留为历史打包证据；当前候选清单的 iPad 主资产是实际上传 IPA。源码仍为私有干净提交 e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89，App 输入 SHA-256 6d912b4a07671f2be558fcb1a8678232667adf3d97454d54bb47bf7ff7929c4e。现有日用 development build 11、AltStore 路径、配对与文稿没有被替换或删除。
+
+本人内部组“本人 USB 验证”已创建，采用手动分发，已加入且仅加入 build 12。只选择既有账户持有人发起内部邀请；最终发送结果尚未确认，未新增外部测试者，未开启自动分发。本人随后已确认实际使用 TestFlight build12 与公证 arm64 Mac，初步试用未发现问题；该反馈已私有留存。未据此推定全部逐项检查或独立新用户首装通过。

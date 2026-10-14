@@ -52,7 +52,7 @@ Mac 在网络接收入口记录本地 stamp，在投递前判断 100 ms 样本�
 
 Pencil 采集拷贝 actual 与 coalesced、排序去重并保留静止终点，不发送 predicted。Mac `PencilInputPipeline` 通过 `PencilInjectionBackend` 使用 `.hidSystemState` 与 HID event tap，包含 tablet 字段、proximity 和幂等释放。样本间隔保留；不依赖跨设备时钟决定投递。
 
-Touch 在 iPad 状态机中判定 Pointer / Scroll / Magnify，再发送语义。Pencil / hover 优先；第三指、系统取消、触点替换会取消，全部抬起后重新开始。正常双指先后抬起只发一次 ended，剩余触点不得变成点击或拖动。Mac 普通 scroll 保留小数像素累积、固定 began 落点，并明确清除继承的 Command 修饰键。
+Touch 在 iPad 状态机中判定 Pointer / Scroll / Magnify，再发送语义。Pencil / hover 优先；第三指、系统取消、触点替换会取消，全部抬起后重新开始。正常双指先后抬起只发一次 ended，剩余触点不得变成点击或拖动。Mac 普通 scroll 保留小数像素累积、固定 began 落点，并明确清除继承的 Command 修饰键。GoodNotes 的横向滚轮方向按 began 冻结的目标单独补偿，纵向及其他应用维持原映射；Ecru 使用独立的原生平移通道。
 
 ## 4. 应用公开缩放与执行边界
 
@@ -91,6 +91,8 @@ Mac 使用 ScreenCaptureKit → VideoToolbox H.264，iPad 使用 VideoToolbox �
 Mac 编码前按发送占位跳帧；`VideoSender` 保留连续 GOP、最新 IDR 与有界待发送工作。丢参考链后从新 IDR 开始，不把残缺 P 帧送给解码器。
 
 iPad `VideoDecodePump` 在跨媒体队列前限制待解码压缩帧：2 帧、8 MiB、250 ms，config 有独立单槽。过载、过期或缺口丢整个待解码参考链并请求 IDR；同时最多一个物理 drain，旧 consumer 只在自己的在途工作完成后 reset，锁内不运行客户回调。
+
+iPad 的拥塞反馈使用待解码队列、参考链恢复计数、等待 IDR 与实际显示压力。正常 config/IDR 替换或迟到旧世代被丢弃仍计入诊断丢帧数，但不能单独触发 Mac 降码率/FPS；否则正常关键帧可被误判为连续拥塞。
 
 `VideoDecodeContext` 包含 InputContext 和独立视频 epoch。B 替换退休旧 decoder 与 present 回调，但保留 A 的输入身份；旧 B 已提交 drawable 的迟到完成不能开放新 epoch。Metal 最新帧优先且限制在途，首帧必须实际 present 才建立 ready。
 

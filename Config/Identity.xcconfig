@@ -3,7 +3,7 @@
 #include? "Signing.local.xcconfig"
 
 PADINK_BUILD_VARIANT = development
-PADINK_NAME_development = PadInk Dev
+PADINK_NAME_development = PadInk
 PADINK_NAME_release = PadInk
 PADINK_SUFFIX_development = .development
 PADINK_SUFFIX_release =

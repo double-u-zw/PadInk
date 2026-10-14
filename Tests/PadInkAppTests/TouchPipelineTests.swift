@@ -47,21 +47,23 @@ final class TouchPipelineTests: XCTestCase {
   XCTAssertEqual(displacement, -30, accuracy: 1)
  }
  func testScrollTerminalFlushesRemainderAndCancellationDoesNotLeakToNextGesture() throws {
+  for family in [ApplicationFamily.goodnotes, .generic] {
   for phase in [TouchPhase.ended, .cancelled] {
    var posted: [CGEvent] = []; let b = PointerInjectionBackend { posted.append($0) }
    b.displayBounds = CGRect(x: 0, y: 0, width: 1000, height: 500)
-   try b.deliver(event(1, .began, .scroll))
+   try b.deliver(event(1, .began, .scroll), targetFamily: family)
    var move = event(2, .changed, .scroll); move.dx = 0.0004; move.dy = -0.0008
-   try b.deliver(move); move.sequence = 3; try b.deliver(move)
-   try b.deliver(event(4, phase, .scroll))
+   try b.deliver(move, targetFamily: family); move.sequence = 3; try b.deliver(move, targetFamily: family)
+   try b.deliver(event(4, phase, .scroll), targetFamily: family)
    let totalX = posted.compactMap { NSEvent(cgEvent: $0)?.scrollingDeltaX }.reduce(0, +)
    let totalY = posted.compactMap { NSEvent(cgEvent: $0)?.scrollingDeltaY }.reduce(0, +)
-   XCTAssertEqual(totalX, phase == .ended ? -1 : 0)
+   XCTAssertEqual(totalX, phase == .ended ? (family == .goodnotes ? 1 : -1) : 0)
    XCTAssertEqual(totalY, phase == .ended ? 1 : 0)
    posted.removeAll(); try b.deliver(event(1, .began, .scroll)); try b.deliver(move)
    try b.deliver(event(4, .ended, .scroll))
+   XCTAssertEqual(posted.compactMap { NSEvent(cgEvent: $0)?.scrollingDeltaX }.reduce(0, +), 0)
    XCTAssertEqual(posted.compactMap { NSEvent(cgEvent: $0)?.scrollingDeltaY }.reduce(0, +), 0)
-  }
+  } }
  }
  func testOnlyPencilAndPencilActiveNeverPostPointerEvents() {
   var events: [CGEvent] = []; let p = pipeline { events.append($0) }

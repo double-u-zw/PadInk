@@ -113,12 +113,20 @@ def parse_config(path):
     return config
 
 
-def prepare(root, out=None, preview=False, notes=None):
+def selected_architectures(release):
+    values = release.get("macArchitectures")
+    if not isinstance(values, list) or not values or len(values) != len(set(values)) or not set(values) <= MAC_ARCHITECTURES:
+        raise ReleaseError("候选必须明确有效且不重复的 Mac 目标架构。")
+    return set(values)
+
+
+def prepare(root, out=None, preview=False, notes=None, mac_architectures=("arm64",)):
     root = Path(root).resolve()
     source, files = source_snapshot(root)
     if source["dirty"] and not preview:
         raise ReleaseError("工作区有未提交改动：不能把旧 HEAD 或 dirty 树宣称正式 RC。请提交后正式 prepare；本轮用 prepare --preview 保留未提交 diff。")
     version, build = read_version(root)
+    targets = selected_architectures({"macArchitectures": list(mac_architectures)})
     marker = "UNSIGNED-WORKING-TREE-PREVIEW" if preview else "RC"
     notes_supplied = notes is not None
     if notes_supplied:
@@ -146,13 +154,14 @@ def prepare(root, out=None, preview=False, notes=None):
         archive.writestr(prefix + "SOURCE_COMMIT", source["head"] + "\n")
         archive.writestr(prefix + "SOURCE_PROVENANCE.json", json.dumps(source, indent=2) + "\n")
     (out / "RELEASE_NOTES.md").write_text(text)
-    contract = {"schemaVersion": SCHEMA, "mac": {"role": "end-user-mac", "format": "separate-arm64-and-x86_64-zips-containing-Developer-ID-signed-stapled-app", "architectures": sorted(MAC_ARCHITECTURES), "mustVerify": ["source-and-version", "codesign", "stapler", "Gatekeeper"]},
+    contract = {"schemaVersion": SCHEMA, "mac": {"role": "end-user-mac", "format": "per-architecture-zips-containing-Developer-ID-signed-stapled-app", "architectures": sorted(targets), "mustVerify": ["source-and-version", "codesign", "stapler", "Gatekeeper"]},
                 "ipad": {"role": "maintainer-upload-only", "format": "app-store-connect-export-ipa", "endUserInstallation": "TestFlight invitation/link after upload, processing and any required review", "ipaIsOrdinaryUserInstaller": False},
                 "source": {"role": "developer-source-only", "mustExclude": ["signing-configs", "private-keys-and-certificates", "diagnostics", "build-logs"]},
                 "preview": {"unsigned": True, "endUserDistributable": False}}
+    contract["mac"]["signOnly"] = {"role": "maintainer-mac-notary-candidate", "ordinaryUserInstaller": False, "notarizationRequiredBeforePublicStaging": True}
     (out / "ASSETS.json").write_text(json.dumps(contract, ensure_ascii=False, indent=2) + "\n")
     manifest = {"schemaVersion": SCHEMA, "createdAtUTC": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-                "release": {"version": version, "build": build, "channel": "preview" if preview else "rc", "mode": "unsigned-working-tree-preview" if preview else "release-candidate", "published": False, "variant": "release", "macArchitectures": sorted(MAC_ARCHITECTURES)},
+                "release": {"version": version, "build": build, "channel": "preview" if preview else "rc", "mode": "unsigned-working-tree-preview" if preview else "release-candidate", "published": False, "variant": "release", "macArchitectures": sorted(targets)},
                 "source": source, "releaseNotes": {"path": "RELEASE_NOTES.md", "status": "provided" if notes_supplied else "draft"},
                 "distribution": {"mac": "unsigned-preview" if preview else "not-built", "ipad": "not-uploaded-to-TestFlight", "endUserDistributable": False},
                 "assets": [{"path": name, "role": "developer-source-only", "sha256": file_sha(out / name), "byteCount": (out / name).stat().st_size}],
@@ -227,6 +236,7 @@ def check(root, out, require_assets=False, require_distributable=False, verify_p
     if manifest.get("schemaVersion") != SCHEMA:
         raise ReleaseError("不支持的 RC manifest schema。")
     release, source = manifest["release"], manifest["source"]
+    targets = selected_architectures(release)
     preview = release["mode"] == "unsigned-working-tree-preview"
     if preview != (release["channel"] == "preview") or (source["dirty"] and not preview):
         raise ReleaseError("dirty/preview/RC 标记不一致。")
@@ -253,6 +263,8 @@ def check(root, out, require_assets=False, require_distributable=False, verify_p
     if manifest["releaseNotes"]["sha256"] != file_sha(out / "RELEASE_NOTES.md") or manifest["assetContractSHA256"] != file_sha(out / "ASSETS.json"):
         raise ReleaseError("notes/assets contract 摘要与 manifest 不一致。")
     contract = json.loads((out / "ASSETS.json").read_text())
+    if contract.get("mac", {}).get("architectures") != sorted(targets):
+        raise ReleaseError("资产契约与候选目标架构不一致。")
     if contract.get("schemaVersion") != SCHEMA or contract.get("ipad", {}).get("ipaIsOrdinaryUserInstaller") is not False or contract.get("preview", {}).get("endUserDistributable") is not False:
         raise ReleaseError("ASSETS 契约必须明确 IPA 不是普通用户安装包、unsigned preview 不可分发。")
     source_assets = [asset for asset in manifest["assets"] if asset["role"] == "developer-source-only"]
@@ -264,27 +276,48 @@ def check(root, out, require_assets=False, require_distributable=False, verify_p
         if asset["sha256"] != file_sha(path) or asset["byteCount"] != path.stat().st_size:
             raise ReleaseError(f"资产摘要/大小不匹配：{path.name}")
         if asset["role"] == "maintainer-testflight-upload-candidate":
-            if preview or asset.get("ordinaryUserInstaller") is not False or asset.get("uploadRequired") is not True:
+            uploaded = asset.get("uploaded") is True
+            if preview or asset.get("ordinaryUserInstaller") is not False or asset.get("uploadRequired") is not (not uploaded):
                 raise ReleaseError("iPad IPA 只能是维护者上传候选，不能冒充普通用户安装包。")
             verify_ipa_metadata(path, manifest, asset["bundleID"])
+        elif asset["role"] == "maintainer-testflight-pre-upload-export":
+            if preview or asset.get("ordinaryUserInstaller") is not False or asset.get("uploadRequired") is not False or not asset.get("supersededForUploadBy"):
+                raise ReleaseError("上传前导出必须明确是历史打包证据，不得作为当前上传文件。")
+            verify_ipa_metadata(path, manifest, asset["bundleID"])
         elif asset["role"] == "end-user-mac":
+            if asset.get("architecture") not in targets:
+                raise ReleaseError("非本轮目标架构不能成为当前 Mac 分发资产。")
             if asset.get("architecture") not in MAC_ARCHITECTURES or ("-mac-" + str(asset.get("architecture")) + "-") not in asset["path"]:
                 raise ReleaseError("Mac asset must declare arm64 or x86_64.")
             if preview or asset.get("signing") != "Developer ID Application" or asset.get("notarization") != "accepted-and-stapled":
                 raise ReleaseError("Mac 分发资产缺少明确签名/公证标记。")
+        elif asset["role"] == "maintainer-mac-notary-candidate":
+            if preview or asset.get("architecture") not in MAC_ARCHITECTURES or asset.get("signing") != "Developer ID Application" or asset.get("notarization") != "pending" or asset.get("ordinaryUserInstaller") is not False:
+                raise ReleaseError("未公证 Mac 签名包必须明确是维护者私有候选，不是公开安装包。")
+            if (asset.get("architecture") not in targets) != (asset.get("excludedFromCurrentScope") is True):
+                raise ReleaseError("历史签名包必须明确排除在当前候选材料之外。")
         elif asset["role"] != "developer-source-only":
             raise ReleaseError("未知资产角色。")
     mac_assets = [a for a in manifest["assets"] if a["role"] == "end-user-mac"]
     architectures = [a.get("architecture") for a in mac_assets]
     if len(architectures) != len(set(architectures)): raise ReleaseError("Duplicate Mac architecture assets.")
-    if require_assets and set(architectures) != MAC_ARCHITECTURES: raise ReleaseError("RC needs both arm64 and x86_64 Mac assets.")
+    if require_assets and set(architectures) != targets: raise ReleaseError("RC 缺少声明的 Mac 目标架构资产。")
     roles = {asset["role"] for asset in manifest["assets"]}
+    cloud = manifest.get("appStoreConnect")
+    if cloud:
+        uploaded = [a for a in manifest["assets"] if a["role"] == "maintainer-testflight-upload-candidate" and a.get("uploaded") is True]
+        if len(uploaded) != 1 or cloud.get("actualUploadedIPASHA256") != uploaded[0]["sha256"] or cloud.get("actualUploadedIPAPath") != uploaded[0]["path"] or cloud.get("source") != source or (cloud.get("uploadedVersion"), cloud.get("uploadedBuild")) != (release["version"], release["build"]):
+            raise ReleaseError("实际 TestFlight 上传记录与已留存 IPA/版本/精确源码不一致。")
+        if cloud.get("AppStoreReviewSubmitted") is not False or cloud.get("publiclyReleased") is not False:
+            raise ReleaseError("此候选没有 App Store 审核/公开发布授权，不能添加相应声明。")
     if require_assets and any(not asset.get("debugSymbols", {}).get("matchedAtBuild") for asset in manifest["assets"] if asset["role"] != "developer-source-only"):
         raise ReleaseError("正式二进制资产缺少 App/dSYM UUID 匹配记录。")
     if require_assets and (preview or not {"end-user-mac", "maintainer-testflight-upload-candidate"} <= roles or manifest["releaseNotes"]["status"] != "provided"):
         raise ReleaseError("正式 RC 所需 Mac/iPad 资产或 release notes 尚未齐备；预览不是正式资产。")
     independently_verified = False
     if verify_platform or require_distributable:
+        for mac in [a for a in manifest["assets"] if a["role"] == "maintainer-mac-notary-candidate" and not a.get("excludedFromCurrentScope")]:
+            verify_mac_zip(root, out / mac["path"], manifest, mac["bundleID"], mac["teamID"], runner, mac["architecture"], notarized=False)
         for mac in mac_assets:
             verify_mac_zip(root, out / mac["path"], manifest, mac["bundleID"], mac["teamID"], runner, mac["architecture"])
             independently_verified = True
@@ -304,13 +337,13 @@ def ensure_frozen(root, manifest):
         raise ReleaseError("源码/版本与已冻结 RC 不一致；请从干净 HEAD 重新 prepare，不能为旧 HEAD 或已改变的树签名。")
 
 
-def paid_config(root, platform):
+def paid_config(root, platform, require_notary=True):
     path = root / "Config/Release.local.xcconfig"
     if not path.exists():
         raise ReleaseError("缺少 Config/Release.local.xcconfig。按 Release.example.xcconfig 填写正式付费团队/注册 bundle ID；不会使用免费开发者配置代替。")
     config = parse_config(path)
     required = ["DEVELOPMENT_TEAM", "PADINK_BUNDLE_PREFIX", "PADINK_MAC_BUNDLE_ID", "PADINK_IPAD_BUNDLE_ID"]
-    required += ["PADINK_MAC_SIGN_IDENTITY", "PADINK_NOTARY_PROFILE"] if platform == "mac" else ["PADINK_IPAD_SIGN_IDENTITY"]
+    required += (["PADINK_MAC_SIGN_IDENTITY"] + (["PADINK_NOTARY_PROFILE"] if require_notary else [])) if platform == "mac" else ["PADINK_IPAD_SIGN_IDENTITY"]
     if any(not config.get(key) or "YOUR_" in config[key] or "$" in config[key] for key in required):
         raise ReleaseError("正式发布配置缺失或仍有占位符；不会猜测团队、bundle ID 或 credentials。")
     if not re.fullmatch(r"[A-Z0-9]{10}", config["DEVELOPMENT_TEAM"]):
@@ -340,7 +373,7 @@ class Runner:
         return result.stdout, result.stderr
 
 
-def preflight(config, platform, run):
+def preflight(config, platform, run, require_notary=True):
     output, _ = run(["security", "find-identity", "-v", "-p", "codesigning"])
     names = re.findall(r'"([^"\n]+)"', output.decode(errors="replace"))
     identity = config["PADINK_MAC_SIGN_IDENTITY"] if platform == "mac" else config["PADINK_IPAD_SIGN_IDENTITY"]
@@ -348,9 +381,14 @@ def preflight(config, platform, run):
     prefix = "Developer ID Application:" if platform == "mac" else "Apple Distribution:"
     if not any(name.startswith(prefix) and f"({team})" in name and (name == identity or identity == "Apple Distribution") for name in names):
         raise ReleaseError(f"钥匙串缺少正式团队可用的 {prefix.rstrip(':')} 私钥身份；免费 Apple Development 不能替代。")
-    if platform == "mac":
+    if platform == "mac" and require_notary:
         run(["xcrun", "notarytool", "history", "--keychain-profile", config["PADINK_NOTARY_PROFILE"], "--output-format", "json"])
-    run(["xcodebuild", "-version"])
+    output, _ = run(["xcodebuild", "-version"])
+    if platform == "ipad":
+        match = re.search(rb"Xcode (\d+)", output)
+        sdk, _ = run(["xcrun", "--sdk", "iphoneos", "--show-sdk-version"])
+        if not match or int(match[1]) < 26 or not re.match(rb"(?:2[6-9]|[3-9]\d)\.", sdk.strip()):
+            raise ReleaseError("App Store Connect 当前要求 Xcode 26+ / iPadOS SDK 26+；不能导出旧 SDK 候选。")
 
 
 def build_settings(manifest, config, platform):
@@ -395,7 +433,7 @@ def verify_mac_app(app, manifest, bundle, team, run, notarized=True):
         run(["spctl", "--assess", "--type", "execute", "--verbose=4", app])
 
 
-def verify_mac_zip(root, path, manifest, bundle, team, runner=None, architecture=None):
+def verify_mac_zip(root, path, manifest, bundle, team, runner=None, architecture=None, notarized=True):
     run = runner or Runner(root, "mac-independent-check-" + (architecture or "universal"))
     with zipfile.ZipFile(path) as archive:
         for name in archive.namelist():
@@ -414,7 +452,7 @@ def verify_mac_zip(root, path, manifest, bundle, team, runner=None, architecture
         apps = list(destination.glob("*.app"))
         if len(apps) != 1:
             raise ReleaseError("Mac ZIP 必须在根目录包含唯一 App。")
-        verify_mac_app(apps[0], manifest, bundle, team, run)
+        verify_mac_app(apps[0], manifest, bundle, team, run, notarized=notarized)
         info = plistlib.loads((apps[0] / "Contents/Info.plist").read_bytes())
         binary = apps[0] / "Contents/MacOS" / info["CFBundleExecutable"]
         output, _ = run(["xcrun", "dwarfdump", "--uuid", binary])
@@ -422,7 +460,8 @@ def verify_mac_zip(root, path, manifest, bundle, team, runner=None, architecture
         expected = {architecture} if architecture else MAC_ARCHITECTURES
         if set(uuids) != expected:
             raise ReleaseError("Mac ZIP 的实际架构与资产标签不一致。")
-        asset = next((asset for asset in manifest["assets"] if asset["role"] == "end-user-mac" and asset.get("architecture") == architecture), None)
+        role = "end-user-mac" if notarized else "maintainer-mac-notary-candidate"
+        asset = next((asset for asset in manifest["assets"] if asset["role"] == role and asset.get("architecture") == architecture), None)
         if asset and asset.get("debugSymbols", {}).get("uuidByArchitecture") != uuids:
             raise ReleaseError("Mac ZIP 的 UUID 与保留的 dSYM 匹配记录不一致。")
 
@@ -434,9 +473,39 @@ def add_asset(out, manifest, asset):
     write_manifest(out, manifest)
 
 
-def build_platform(root, out, platform, runner=None, architecture=None):
+def narrow_mac_scope(root, out, architectures):
+    """Narrow packaging targets without rewriting frozen app inputs or signed bytes."""
+    out = Path(out).resolve()
+    manifest, _ = check(root, out)
+    ensure_frozen(root, manifest)
+    previous = selected_architectures(manifest["release"])
+    targets = selected_architectures({"macArchitectures": list(architectures)})
+    if not targets < previous:
+        raise ReleaseError("只允许明确缩小现有候选范围；不重复操作或扩大范围。")
+    if any(a["role"] == "end-user-mac" and a["architecture"] not in targets for a in manifest["assets"]):
+        raise ReleaseError("已完成公证的分发资产不能在此操作中改为历史材料。")
+    contract = json.loads((out / "ASSETS.json").read_text())
+    manifest["release"]["macArchitectures"] = sorted(targets)
+    contract["mac"]["architectures"] = sorted(targets)
+    contract["mac"]["format"] = "per-architecture-zips-containing-Developer-ID-signed-stapled-app"
+    for asset in manifest["assets"]:
+        if asset["role"] == "maintainer-mac-notary-candidate" and asset["architecture"] not in targets:
+            asset["excludedFromCurrentScope"] = True
+    manifest.setdefault("packagingChanges", []).append({"operation": "narrow-mac-scope", "previousArchitectures": sorted(previous), "architectures": sorted(targets), "atUTC": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "toolSHA256": file_sha(Path(__file__)), "frozenSourceUnchanged": True})
+    notes = out / "RELEASE_NOTES.md"
+    notes.write_text(notes.read_text() + "\nCurrent Mac distribution scope: " + ", ".join(sorted(targets)) + ". Signed packages outside this scope are private historical assets and are excluded from submission/distribution. Frozen app build inputs are unchanged.\n")
+    (out / "ASSETS.json").write_text(json.dumps(contract, ensure_ascii=False, indent=2) + "\n")
+    write_manifest(out, manifest)
+    check(root, out)
+    return out
+
+
+def build_platform(root, out, platform, runner=None, architecture=None, sign_only=False):
+    if sign_only and platform != "mac":
+        raise ReleaseError("sign-only applies only to Mac")
     if platform == "mac" and architecture is None:
-        return [build_platform(root, out, platform, runner, arch) for arch in sorted(MAC_ARCHITECTURES)]
+        manifest, _ = check(root, out)
+        return [build_platform(root, out, platform, runner, arch, sign_only=sign_only) for arch in sorted(selected_architectures(manifest["release"]))]
     if platform == "mac" and architecture not in MAC_ARCHITECTURES:
         raise ReleaseError("Mac architecture must be arm64 or x86_64.")
     if platform != "mac" and architecture is not None:
@@ -444,16 +513,20 @@ def build_platform(root, out, platform, runner=None, architecture=None):
     root, out = Path(root).resolve(), Path(out).resolve()
     manifest, _ = check(root, out)
     ensure_frozen(root, manifest)
-    role = "end-user-mac" if platform == "mac" else "maintainer-testflight-upload-candidate"
+    if platform == "mac" and architecture not in selected_architectures(manifest["release"]):
+        raise ReleaseError("该架构不在本轮候选范围内，不能构建。")
+    role = ("maintainer-mac-notary-candidate" if sign_only else "end-user-mac") if platform == "mac" else "maintainer-testflight-upload-candidate"
     if any(asset["role"] == role and asset.get("architecture") == architecture for asset in manifest["assets"]):
         raise ReleaseError("该平台候选资产已生成；请用新目录准备另一候选。")
-    config = paid_config(root, platform)
+    if platform == "mac" and any(a["role"] in {"end-user-mac", "maintainer-mac-notary-candidate"} and a.get("architecture") == architecture for a in manifest["assets"]):
+        raise ReleaseError("该架构已有签名包；用 notarize 完成公证，不要重复构建。")
+    config = paid_config(root, platform, require_notary=not sign_only)
     release_identity = {key: config[key] for key in ["DEVELOPMENT_TEAM", "PADINK_BUNDLE_PREFIX", "PADINK_MAC_BUNDLE_ID", "PADINK_IPAD_BUNDLE_ID"]}
     if manifest.get("releaseIdentity", release_identity) != release_identity:
         raise ReleaseError("Release.local 的正式团队/bundle ID 与已生成的另一端不一致；请用新目录准备候选。")
     manifest["releaseIdentity"] = release_identity
     run = runner or Runner(root, platform + ("-" + architecture if architecture else ""))
-    preflight(config, platform, run)  # fails before producing assets if paid identities/profile are unavailable
+    preflight(config, platform, run, require_notary=not sign_only)
     run([sys.executable, root / "engineering/scripts/generate-project.py"])
     ensure_frozen(root, manifest)
     work = root / "build/rc-private-work" / (out.name + "-" + platform + ("-" + architecture if architecture else ""))
@@ -480,6 +553,16 @@ def build_platform(root, out, platform, runner=None, architecture=None):
         verify_mac_app(app, manifest, bundle, team, run, notarized=False)
         submission = work / "notary-submission.zip"
         run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app, submission])
+        if sign_only:
+            name = f"PadInk-{version}-b{build}-mac-{architecture}-DeveloperID-awaiting-notarization.zip"
+            ensure_frozen(root, manifest)
+            shutil.copy2(submission, out / name)
+            asset = {"path": name, "role": role, "bundleID": bundle, "teamID": team, "signing": "Developer ID Application", "notarization": "pending", "ordinaryUserInstaller": False, "architecture": architecture, "debugSymbols": symbols}
+            manifest["distribution"]["mac"] = "Developer-ID-signed-notarization-pending"
+            manifest["platformValidation"]["mac"] = "codesign-and-dSYM-passed; notarization-not-submitted"
+            add_asset(out, manifest, asset)
+            check(root, out, verify_platform=True, runner=run)
+            return out / name
         output, _ = run(["xcrun", "notarytool", "submit", submission, "--keychain-profile", config["PADINK_NOTARY_PROFILE"], "--wait", "--output-format", "json"])
         receipt = json.loads(output)
         if receipt.get("status") != "Accepted" or not receipt.get("id"):
@@ -492,7 +575,7 @@ def build_platform(root, out, platform, runner=None, architecture=None):
         ensure_frozen(root, manifest)
         verify_mac_zip(root, candidate, manifest, bundle, team, run, architecture)
         shutil.copy2(candidate, out / name)
-        manifest["distribution"]["mac"] = "Developer-ID-notarized-and-stapled-split-zips" if {architecture} | {a.get("architecture") for a in manifest["assets"] if a["role"] == role} == MAC_ARCHITECTURES else "partial-architecture-assets"
+        manifest["distribution"]["mac"] = "Developer-ID-notarized-and-stapled-target-zips" if {architecture} | {a.get("architecture") for a in manifest["assets"] if a["role"] == role} == selected_architectures(manifest["release"]) else "partial-architecture-assets"
         manifest["platformValidation"]["mac"] = "codesign-stapler-Gatekeeper-passed-at-build"
         asset = {"path": name, "role": role, "bundleID": bundle, "teamID": team, "signing": "Developer ID Application", "notarization": "accepted-and-stapled", "notarySubmissionID": receipt["id"], "architecture": architecture}
     else:
@@ -514,6 +597,87 @@ def build_platform(root, out, platform, runner=None, architecture=None):
         manifest["platformValidation"]["ipad"] = "Apple-Distribution-signature-and-AppStore-profile-passed-at-export; TestFlight-not-uploaded"
         asset = {"path": name, "role": role, "bundleID": bundle, "teamID": team, "signing": "Apple Distribution", "ordinaryUserInstaller": False, "uploadRequired": True}
     asset["debugSymbols"] = symbols
+    add_asset(out, manifest, asset)
+    check(root, out)
+    return out / name
+
+
+def notarize_platform(root, out, architecture, runner=None, resume=False):
+    """Submit already reviewed signed bytes; never rebuild or publish them."""
+    if architecture not in MAC_ARCHITECTURES:
+        raise ReleaseError("notarization needs an explicit Mac architecture")
+    root, out = Path(root).resolve(), Path(out).resolve()
+    manifest, _ = check(root, out)
+    ensure_frozen(root, manifest)
+    if architecture not in selected_architectures(manifest["release"]):
+        raise ReleaseError("该历史架构已排除在当前候选外，禁止提交公证。")
+    pending = next((a for a in manifest["assets"] if a["role"] == "maintainer-mac-notary-candidate" and a["architecture"] == architecture), None)
+    if not pending or any(a["role"] == "end-user-mac" and a["architecture"] == architecture for a in manifest["assets"]):
+        raise ReleaseError("需要唯一尚未完成公证的签名候选；禁止重复提交已完成资产。")
+    config = paid_config(root, "mac")
+    if any(config[k] != manifest["releaseIdentity"][k] for k in manifest["releaseIdentity"]):
+        raise ReleaseError("公证配置与已签名候选身份不一致。")
+    run = runner or Runner(root, "notarize-" + architecture)
+    preflight(config, "mac", run)
+    verify_mac_zip(root, out / pending["path"], manifest, pending["bundleID"], pending["teamID"], run, architecture, notarized=False)
+    work = root / "build/rc-private-work" / (out.name + "-notarize-" + architecture)
+    if work.exists() and not resume:
+        raise ReleaseError("公证工作目录已存在；先核对既有提交，不能盲目重复提交。")
+    submission_file = work / "SUBMISSION.json"
+    if resume:
+        if not submission_file.is_file():
+            raise ReleaseError("缺少已有公证提交记录，禁止猜测或重新上传。")
+        submission = json.loads(submission_file.read_text())
+        if submission.get("assetSHA256") != pending["sha256"] or submission.get("assetPath") != pending["path"] or submission.get("source") != manifest["source"] or not submission.get("id"):
+            raise ReleaseError("公证提交记录与原签名包/源码不一致。")
+    else:
+        work.mkdir(parents=True)
+        run(["ditto", "-x", "-k", out / pending["path"], work])
+        ensure_frozen(root, manifest)
+        output, _ = run(["xcrun", "notarytool", "submit", out / pending["path"], "--keychain-profile", config["PADINK_NOTARY_PROFILE"], "--no-wait", "--output-format", "json"])
+        receipt = json.loads(output)
+        if not receipt.get("id"):
+            raise ReleaseError("Apple 未返回提交编号；保留日志，禁止盲目重新上传。")
+        submission = {"id": receipt["id"], "assetPath": pending["path"], "assetSHA256": pending["sha256"], "source": manifest["source"]}
+        submission_file.write_text(json.dumps(submission, indent=2) + "\n")
+        submission_file.chmod(0o600)
+    app = work / "PadInk.app"
+    ensure_frozen(root, manifest)
+    output, _ = run(["xcrun", "notarytool", "info", submission["id"], "--keychain-profile", config["PADINK_NOTARY_PROFILE"], "--output-format", "json"])
+    receipt = json.loads(output)
+    if receipt.get("id") != submission["id"]:
+        raise ReleaseError("Apple 回执编号与原提交不一致。")
+    pending["notarySubmissionID"] = submission["id"]
+    pending["submissionState"] = receipt.get("status")
+    if receipt.get("status") == "In Progress":
+        manifest["distribution"]["mac"] = "Developer-ID-signed-notarization-in-progress"
+        manifest["platformValidation"]["mac"] = "codesign-and-dSYM-passed; Apple-notarization-in-progress; no-ticket-or-Gatekeeper-pass"
+        write_manifest(out, manifest)
+        check(root, out)
+        return None
+    if receipt.get("status") != "Accepted":
+        manifest["distribution"]["mac"] = "Developer-ID-signed-notarization-rejected"
+        manifest["platformValidation"]["mac"] = "codesign-and-dSYM-passed; Apple-notarization-rejected"
+        write_manifest(out, manifest)
+        raise ReleaseError("Apple 公证未 Accepted；保留原签名候选和私有日志，不生成公开包。")
+    run(["xcrun", "stapler", "staple", app])
+    verify_mac_app(app, manifest, pending["bundleID"], pending["teamID"], run)
+    version, build = manifest["release"]["version"], manifest["release"]["build"]
+    name = f"PadInk-{version}-b{build}-mac-{architecture}-DeveloperID-notarized.zip"
+    candidate = work / name
+    run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app, candidate])
+    ensure_frozen(root, manifest)
+    verify_mac_zip(root, candidate, manifest, pending["bundleID"], pending["teamID"], run, architecture)
+    # Stapling cannot change the executable UUID; retain the same original archive/dSYM.
+    actual, _ = run(["xcrun", "dwarfdump", "--uuid", app / "Contents/MacOS/PadInk"])
+    if parse_uuids(actual) != pending["debugSymbols"]["uuidByArchitecture"]:
+        raise ReleaseError("公证后 UUID 与原签名候选/dSYM 不一致。")
+    shutil.copy2(candidate, out / name)
+    asset = {**pending, "path": name, "role": "end-user-mac", "notarization": "accepted-and-stapled", "notarySubmissionID": receipt["id"]}
+    asset.pop("ordinaryUserInstaller")
+    asset.pop("submissionState", None)
+    manifest["distribution"]["mac"] = "Developer-ID-notarized-and-stapled-target-zips" if {architecture} | {a.get("architecture") for a in manifest["assets"] if a["role"] == "end-user-mac"} == selected_architectures(manifest["release"]) else "partial-architecture-assets"
+    manifest["platformValidation"]["mac"] = "codesign-stapler-Gatekeeper-passed-at-build"
     add_asset(out, manifest, asset)
     check(root, out)
     return out / name
@@ -542,6 +706,26 @@ def verify_debug_symbols(archive, app, platform, run, architecture=None):
     return {"matchedAtBuild": True, "archiveRetainedPrivately": True, "uuidByArchitecture": executable}
 
 
+def verify_ipad_entitlements(actual, profile, bundle, team):
+    """Validate the binary's signature, not only the provisioning profile envelope."""
+    app_id = team + "." + bundle
+    if actual.get("get-task-allow") is not False or actual.get("application-identifier") != app_id or actual.get("com.apple.developer.team-identifier") != team:
+        raise ReleaseError("iPad 实际签名含调试权限或团队/App ID 不匹配。")
+    allowed = {"application-identifier", "com.apple.developer.team-identifier", "get-task-allow", "keychain-access-groups", "beta-reports-active"}
+    if set(actual) - allowed:
+        raise ReleaseError("iPad 实际签名含未经本产品审核的额外 entitlement。")
+    groups = actual.get("keychain-access-groups", [])
+    if not isinstance(groups, list) or any(group != app_id for group in groups):
+        raise ReleaseError("iPad Keychain access group 不是 App 自身的正式身份。")
+    for key, value in actual.items():
+        permitted = profile.get(key)
+        if key == "keychain-access-groups":
+            if not isinstance(permitted, list) or not all(group in permitted or team + ".*" in permitted for group in value):
+                raise ReleaseError("iPad Keychain access group 超出 profile 授权。")
+        elif value != permitted:
+            raise ReleaseError(f"iPad 实际签名 {key} 与 App Store profile 不一致。")
+
+
 def verify_ipad_export(path, manifest, bundle, team, run):
     with tempfile.TemporaryDirectory() as temporary:
         destination = Path(temporary)
@@ -561,6 +745,13 @@ def verify_ipad_export(path, manifest, bundle, team, run):
         entitlements = profile.get("Entitlements", {})
         if "ProvisionedDevices" in profile or profile.get("ProvisionsAllDevices") or entitlements.get("get-task-allow") is not False or entitlements.get("application-identifier") != team + "." + bundle:
             raise ReleaseError("iPad 导出不是明确匹配正式 bundle 的 App Store profile，不能冒充 TestFlight 候选。")
+        output, _ = run(["codesign", "-d", "--entitlements", ":-", app])
+        try:
+            actual = plistlib.loads(output)
+        except (ValueError, plistlib.InvalidFileException) as error:
+            raise ReleaseError("无法读取 iPad 实际签名 entitlements。") from error
+        verify_ipad_entitlements(actual, entitlements, bundle, team)
+        run([sys.executable, ROOT / "engineering/scripts/check-store-bundle.py", app])
         output, _ = run(["xcrun", "dwarfdump", "--uuid", app / plistlib.loads((app / "Info.plist").read_bytes())["CFBundleExecutable"]])
         uuids = parse_uuids(output)
         asset = next((asset for asset in manifest["assets"] if asset["role"] == "maintainer-testflight-upload-candidate"), None)
@@ -571,9 +762,15 @@ def verify_ipad_export(path, manifest, bundle, team, run):
             raise ReleaseError("iPad App Store profile 已过期或缺少有效期。")
 
 
-def public_assets(root, release, out, include_source=False, runner=None):
+def public_assets(root, release, out, include_source=False, runner=None, documents_root=None):
     release, out = Path(release).resolve(), Path(out).resolve()
     manifest, _ = check(root, release, require_assets=True, verify_platform=True, runner=runner)
+    documentation_source = None
+    if documents_root:
+        documents_root = Path(documents_root).resolve()
+        documentation_source, _ = source_snapshot(documents_root)
+        if documentation_source["sourceSHA256"] != manifest["source"]["sourceSHA256"] or read_version(documents_root) != (manifest["release"]["version"], manifest["release"]["build"]):
+            raise ReleaseError("当前文档的 App 输入/版本与发行包不一致，禁止沿用。")
     if out.exists() and any(out.iterdir()):
         raise ReleaseError("公开 staging 目录非空，不能覆盖。")
     out.mkdir(parents=True, exist_ok=True)
@@ -585,7 +782,7 @@ def public_assets(root, release, out, include_source=False, runner=None):
         prefix = PurePosixPath(archive.namelist()[0]).parts[0] + "/"
         for relative in PUBLIC_DOCS:
             try:
-                data = archive.read(prefix + relative)
+                data = (documents_root / relative).read_bytes() if documents_root else archive.read(prefix + relative)
             except KeyError:
                 raise ReleaseError(f"冻结源码缺少公开使用文档：{relative}，请补齐后重新 prepare。")
             target = out / relative
@@ -597,11 +794,12 @@ def public_assets(root, release, out, include_source=False, runner=None):
                    lambda match: match[1] + "docs/" + match[2] + (match[3] or "") + match[4]
                    if "docs/" + match[2] in PUBLIC_DOCS else match[0], notes)
     (out / "RELEASE_NOTES.md").write_text(notes)
-    contract = {"schemaVersion": SCHEMA, "kind": "public-download-stage", "ipaIncluded": False, "archiveOrLogsIncluded": False,
+    contract = {"schemaVersion": SCHEMA, "kind": "public-download-stage", "macArchitectures": sorted(selected_architectures(manifest["release"])), "ipaIncluded": False, "archiveOrLogsIncluded": False,
                 "ipadInstallation": "TestFlight after upload, processing and required review; no TestFlight link verified here"}
     (out / "ASSETS.json").write_text(json.dumps(contract, indent=2) + "\n")
     public = {"schemaVersion": SCHEMA, "kind": "public-download-stage", "release": manifest["release"], "source": manifest["source"],
               "distribution": manifest["distribution"], "assets": assets, "testflightLink": None,
+              "documentationSource": documentation_source,
               "note": "Local staging only, not published. No private IPA, archive, signing config or logs included."}
     (out / "PUBLIC-MANIFEST.json").write_text(json.dumps(public, indent=2) + "\n")
     names = sorted({"PUBLIC-MANIFEST.json", "ASSETS.json", "RELEASE_NOTES.md"} | {asset["path"] for asset in assets})
@@ -619,8 +817,9 @@ def check_public(root, out, verify_platform=False, runner=None):
         raise ReleaseError("本工具没有核验发布/真实 TestFlight 链接，不能添加该分发声明。")
     roles = [asset["role"] for asset in manifest["assets"]]
     mac_assets = [a for a in manifest["assets"] if a["role"] == "end-user-mac"]
-    if {a.get("architecture") for a in mac_assets} != MAC_ARCHITECTURES or len(mac_assets) != 2 or any(role not in {"end-user-mac", "developer-source-only", "public-documentation"} for role in roles):
-        raise ReleaseError("公开目录必须包含两种架构的 Mac 资产，可选一个源码资产；不得包含 IPA。")
+    targets = selected_architectures(manifest["release"])
+    if {a.get("architecture") for a in mac_assets} != targets or len(mac_assets) != len(targets) or any(role not in {"end-user-mac", "developer-source-only", "public-documentation"} for role in roles):
+        raise ReleaseError("公开目录必须准确包含声明的 Mac 目标架构；不得包含 IPA。")
     expected = {"PUBLIC-MANIFEST.json", "SHA256SUMS", "ASSETS.json", "RELEASE_NOTES.md"} | {asset["path"] for asset in manifest["assets"]}
     if layout_files(out, expected) != expected or any(path.suffix.lower() == ".ipa" for path in out.rglob("*")):
         raise ReleaseError("公开目录有未声明文件或私有 IPA。")
@@ -631,6 +830,8 @@ def check_public(root, out, verify_platform=False, runner=None):
     contract = json.loads((out / "ASSETS.json").read_text())
     if contract.get("ipaIncluded") is not False or contract.get("archiveOrLogsIncluded") is not False:
         raise ReleaseError("公开契约必须明确不携带 IPA/archive/日志。")
+    if contract.get("macArchitectures", sorted(targets)) != sorted(targets):
+        raise ReleaseError("公开资产契约的 Mac 范围与 manifest 不一致。")
     sums = {}
     for line in safe_asset(out, "SHA256SUMS").read_text().splitlines():
         match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
@@ -693,6 +894,10 @@ def main():
     prep.add_argument("--preview", action="store_true")
     prep.add_argument("--out", type=Path)
     prep.add_argument("--notes", type=Path)
+    prep.add_argument("--mac-architectures", choices=["arm64", "x86_64"], nargs="+", default=["arm64"])
+    scope = commands.add_parser("narrow-mac-scope", help="Narrow packaging targets; preserve frozen source and existing signed bytes")
+    scope.add_argument("--release", type=Path, required=True)
+    scope.add_argument("--architectures", choices=["arm64", "x86_64"], nargs="+", required=True)
     checker = commands.add_parser("check")
     checker.add_argument("release", type=Path)
     checker.add_argument("--require-assets", action="store_true")
@@ -701,35 +906,52 @@ def main():
     for platform in ("mac", "ipad"):
         command = commands.add_parser(platform)
         command.add_argument("--release", type=Path, required=True)
-        if platform == "mac": command.add_argument("--arch", choices=["all", "arm64", "x86_64"], default="all")
+        if platform == "mac":
+            command.add_argument("--arch", choices=["all", "arm64", "x86_64"], default="all")
+            command.add_argument("--sign-only", action="store_true", help="Produce private signed packages without notary credentials or upload")
+    notary = commands.add_parser("notarize", help="Submit existing signed Mac bytes to Apple; requires explicit submission authorization")
+    notary.add_argument("--release", type=Path, required=True)
+    notary.add_argument("--arch", choices=["all", "arm64", "x86_64"], default="all")
+    notary.add_argument("--resume", action="store_true", help="Query existing submission and finish stapling; never upload again")
     public = commands.add_parser("public-assets")
     public.add_argument("--release", type=Path, required=True)
     public.add_argument("--out", type=Path, required=True)
     public.add_argument("--include-source", action="store_true")
+    public.add_argument("--documents-root", type=Path, help="Use current user docs, recording their distinct provenance and requiring identical app inputs/version")
     public_check = commands.add_parser("check-public")
     public_check.add_argument("release", type=Path)
     public_check.add_argument("--verify-platform", action="store_true")
     args = parser.parse_args()
     try:
         if args.command == "prepare":
-            path = prepare(args.root, args.out, args.preview, args.notes)
+            path = prepare(args.root, args.out, args.preview, args.notes, args.mac_architectures)
             print(f"已准备候选契约：{path}\n未发布；预览不供普通用户安装，正式资产尚需签名/公证与 TestFlight。")
         elif args.command == "check":
             manifest, verified = check(args.root, args.release, args.require_assets, args.require_distributable, args.verify_platform)
             print(f"完整性与源码契约通过：{manifest['release']['mode']}。")
-            print("Mac 当前独立验签：" + ("codesign/stapler/Gatekeeper 通过" if verified else "未执行；hash 完整性不代表签名或公证通过"))
-            print("双端分发：尚未完成；iPad TestFlight 未上传/未核验。")
+            print("Mac 当前独立验签：" + ("codesign/stapler/Gatekeeper 通过" if verified else "Developer ID 签名、架构与 dSYM 通过；公证票据/Gatekeeper 尚未通过" if args.verify_platform and any(a["role"] == "maintainer-mac-notary-candidate" and not a.get("excludedFromCurrentScope") for a in manifest["assets"]) else "未执行；hash 完整性不代表签名或公证通过"))
+            print("iPad 渠道记录：" + manifest.get("appStoreConnect", {}).get("status", "未上传/未核验") + "；真人 TestFlight USB 尚需单独验收。")
         elif args.command == "public-assets":
-            path = public_assets(args.root, args.release, args.out, args.include_source)
+            path = public_assets(args.root, args.release, args.out, args.include_source, documents_root=args.documents_root)
             print(f"公开文件已隔离暂存：{path}；不含 IPA 或私有 archive/日志，未发布。")
         elif args.command == "check-public":
             check_public(args.root, args.release, args.verify_platform)
             print("公开目录完整性/角色契约通过；未发布，TestFlight 安装状态仍需实际核验。")
             print("Mac 当前独立验签：" + ("codesign/stapler/Gatekeeper 通过" if args.verify_platform else "未执行；hash 完整性不代表签名或公证通过"))
+        elif args.command == "narrow-mac-scope":
+            print("已缩小候选包装范围，源码与既有签名包未改变：" + str(narrow_mac_scope(args.root, args.release, args.architectures)))
+        elif args.command == "notarize":
+            manifest, _ = check(args.root, args.release)
+            arches = sorted(selected_architectures(manifest["release"])) if args.arch == "all" else [args.arch]
+            for arch in arches:
+                result = notarize_platform(args.root, args.release, arch, resume=args.resume)
+                print("已公证并附票据：" + str(result) if result else "Apple 公证处理中；原提交编号已留存，用 notarize --resume 继续，禁止重新上传。")
+            print("未公开发布。")
         else:
-            path = build_platform(args.root, args.release, args.command, architecture=None if args.command == "ipad" or args.arch == "all" else args.arch)
+            sign_only = args.command == "mac" and args.sign_only
+            path = build_platform(args.root, args.release, args.command, architecture=None if args.command == "ipad" or args.arch == "all" else args.arch, sign_only=sign_only)
             print(f"已生成本地产物：{path}")
-            print("iPad IPA 仅供维护者上传 App Store Connect；本命令不上传、不发布。" if args.command == "ipad" else "Mac 已在本机通过签名、公证票据和 Gatekeeper 检查；未发布下载链接。")
+            print("iPad IPA 仅供维护者上传 App Store Connect；本命令不上传、不发布。" if args.command == "ipad" else "Mac 已正式签名，尚未提交公证；只供维护者核对，不是公开安装包。" if sign_only else "Mac 已在本机通过签名、公证票据和 Gatekeeper 检查；未发布下载链接。")
         return 0
     except (ReleaseError, OSError, subprocess.CalledProcessError, KeyError, json.JSONDecodeError, zipfile.BadZipFile, plistlib.InvalidFileException) as error:
         print("RC 操作停止：" + str(error), file=sys.stderr)

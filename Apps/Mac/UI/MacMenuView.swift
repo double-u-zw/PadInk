@@ -333,6 +333,8 @@ public struct MacMainView: View {
     Text("导出两端诊断，附上使用的应用、刚才的操作和两端版本。")
      .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
     Button("打开诊断…") { navigation.selection = .diagnostics }
+    Link("隐私政策", destination: ProductLinks.privacy)
+    Link("支持与反馈", destination: ProductLinks.support)
    }
   }
  }

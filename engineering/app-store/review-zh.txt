@@ -1,0 +1,19 @@
+PadInk 0.3.0 / build 12 — 审核安装与操作说明
+
+PadInk 将用户自有 Mac 的整个主屏显示到 iPad，并将 Apple Pencil/手指输入发送到 Mac 当前应用。它没有云桌面、远程托管、应用目录、内容商店或 PadInk 账户；无需审核登录账号。文稿由 Mac 目标应用保存，第三方应用及 Ecru 均需另行安装，不包含在 PadInk 中。当前界面为简体中文。
+
+设备：Apple Silicon（M 系列）Mac，部署目标 macOS 14+；iPadOS 17+ 的 iPad、USB 数据线，书写需兼容的 Apple Pencil。本次 Mac 只提供 arm64。最低系统与外部设备未验证。
+配套 Mac 下载：待确认（需提供无需登录即可下载的公证 ZIP）。
+文件：PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip
+SHA-256：374eb9570c572efdc222d97413366cdce81389da356f67f02e7e25acaf376521
+
+1. 解压 Mac ZIP 并打开 PadInk.app。已有同名测试版时先保存文稿、退出旧 App，使用独立文件夹中的新 App。允许系统正常启动确认，保持 Gatekeeper 开启。
+2. 从 Mac 菜单栏笔形图标打开面板。按提示到“系统设置 → 隐私与安全性”允许屏幕录制和辅助功能；系统要求时退出重开。PowerPoint 缩放另可能需要自动化权限。
+3. 在 iPad 安装本次提交的 build 12，打开 PadInk，保持前台和解锁。“用 USB 开始 / 等待 Mac 连接”是连接前的正常状态。
+4. 用 USB 数据线连接。系统询问时信任电脑；随后在 Mac 和 iPad 核对设备名，分别点“允许配对”。系统信任与 App 配对是两步。等待 USB 状态与 Mac 画面出现，保持 VPN 开启；本轮无需配置 Wi-Fi。
+5. Mac 打开无私人信息的测试文稿，选目标应用的笔工具，在 iPad 写字；在 Mac 保存、关闭并重开文稿。开启 iPad“允许手指操作 Mac”后可点击、拖动、双指滚动。缩放效果取决于目标应用的公开能力及文稿焦点，不保证所有应用原生捏合。
+6. 抬笔抬指后拔插 USB，检查恢复。有连接无画面查屏幕录制；有画面无输入查辅助功能、工具与焦点。普通断线不删除配对；需要求助时在两端“诊断”导出，不发送私人文稿。
+
+USB 在 iPad 使用公开 Network.framework 的本机监听，由 Mac 辅助端经系统 usbmuxd 连接。Mac 的该接口未公开文档。没有自带驱动、root helper、debugserver、开发者磁盘镜像或调试服务。正式安装预期不依赖 Xcode、AltServer、AltStore 或开发者模式。USB 会验证配对身份，但应用帧不另加密；保留的 Wi-Fi 路径使用系统 TLS。
+
+本人已确认 TestFlight build 12 与公证 Mac 包初步试用未发现问题。关闭开发者模式、退出 Xcode/AltServer 及各文稿任务仍按逐项实测记录，不声称外部设备首装通过。请根据上述步骤评估 Mac 伴侣依赖与 USB 镜像行为；不声称 Apple 已批准此实现或给予审核豁免。

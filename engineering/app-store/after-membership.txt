@@ -1,0 +1,45 @@
+PadInk 0.3.0 / build 12 — 送审前本人集中确认与操作
+
+当前已完成：正式身份 com.padink.mac / com.padink.ipad；App Store Connect 记录、0.3.0 手动发布草稿；TestFlight build 12 上传处理；M 系列 arm64 Developer ID 签名、公证、票据与 Gatekeeper 校验。本人已确认这套组合初步试用无问题。源码与安装包不重新构建，历史 Beta 3 / build 11、build 10 素材不改号。本轮只在本地补材料，不提交审核、不公开发布、不再上传相同 build。
+
+App Store Connect 草稿已保存中英文名称、副标题、描述、关键词、推广文案及效率/工具分类，并选择现有 build12。审核备注保存会触发联系人必填校验，故未填虚构联系人；审核备注完整文本留在 review-zh/en.txt，待本人补私有联系人后再保存。
+
+一、一次提供的商业与联系信息
+版权主体：本人（已确认）。展示文本为“2026 <本人开发者署名>”，保存前核对开发者账户持有人姓名，不擅自拼写或改用品牌名。
+价格：首版免费（本人已确认）；不再要求本人选择售价。
+发行目标：仅中国大陆（本人最新确认，覆盖此前国内外意向），不包含港澳台或其他海外商店。本轮不准备欧盟分发或公开经营者联系信息，实际销售范围尚未修改。大陆先核对 ICP 适用性与备案信息，不假定 USB/局域网 App 自动豁免，不伪造备案号。Apple 页面如另有账户级身份声明，届时按不在欧盟分发的实际情况由本人处理。
+公开支持邮箱：本人稍后提供，当前留空；不会改用 Apple 登录邮箱。
+审核联系人：姓名、邮箱、国际格式电话（+国家代码），只用于 Apple 私有审核字段。可以自己填 App Store Connect“分发 → 0.3.0 → App 审核信息”；无需发送到聊天。也可填写本机 build/signing/0.3.0-b12/review-contact.private.json；该文件不会进入商店素材或公开文档 ZIP。
+分类草稿：Productivity / Utilities；现有界面仅简体中文，中英文商店文案均已备好。沿用 Apple 标准 EULA，手动发布；不宣称已测过的无障碍能力。
+
+二、问卷答案已备好，最终以本人实际运营方式确认
+本人已授权按建议准备三项问卷。metadata.json 的 submissionProposals 是可核对草稿，不会让最终声明字段自动通过，也不代表已向 Apple 提交声明。
+隐私建议：披露用户主动反馈的 Customer Support 与实际接收的 Diagnostics；客服中实际收到姓名、邮箱等时对应披露，不假定匿名。用途仅客服/排错（App Functionality），不广告、不追踪。画面和输入仍仅在用户设备间实时处理，无自动上传。最终按真实支持流程核定字段，不因为“自愿”就一律选不收集。
+加密：实际使用 Apple CryptoKit、Network/Security 和 Keychain；存在配对认证与 TLS，不能回答“完全没有加密”。当前二进制 ITSAppUsesNonExemptEncryption=NO；按“仅 Apple 系统实现的加密”核对文档豁免，非自研算法实现。
+年龄建议：没有自带内容目录、广告、社交分发、聊天、赌博或医疗内容，对这些自带内容选“无”，不选择儿童类别。“不受限网页访问”建议选“有”，理由是通用镜像可以操作 Mac 浏览器；这是保守解释，不是 Apple 已确认的判定。实际地区年龄由 Apple 根据最终问卷计算，不承诺 4+。
+iPad App 在 M 芯片 Mac / Vision Pro 的商店可用性：建议首版关闭，保持实体 iPad + 独立 Mac 辅助端范围；账号设置尚未改变。
+来源（2026-10-14 核对）：
+https://developer.apple.com/app-store/app-privacy-details/
+https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/
+https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/
+
+地区要求来源（2026-10-14）：
+https://developer.apple.com/help/app-store-connect/reference/app-information/app-information
+
+三、现有 Mac 和 iPad 一次准备的使用证据
+先保存当前文稿。使用 TestFlight 0.3.0 (12) + 同 build 公证 arm64 Mac；现有 RC1 USB 基线保留，只确认本次渠道变化。
+补一句是否实际满足：iPad 开发者模式已关闭；Mac Xcode/AltServer 已退出；VPN 一直开启；USB 连接、Pencil/抬笔、双指、拔插恢复、目标应用文稿保存重开均正常。只勾本人确实做过的项目，见 docs/试用验收清单.txt 第八节。
+截取 2–3 张现有 iPad 横屏真实功能原图：写字、同文稿操作后、USB 状态。使用无私人信息的测试文稿，关闭通知，保留真实 PadInk 界面；不造连接、不使用 DEBUG fixture、不提交账户或上传成功截图。原图保留，设备与 app 版本随附。尺寸与画面清单见 capture.txt。
+13 英寸商店栏需要合规画布尺寸；现有 Air 5 原图为 2360×1640，可保持原比例作为真实应用画面排版进 2752×2064 商店画布（明确是排版，不伪称13英寸实机）；最终画面需本人确认。无需另购设备，也不把旧模拟器等待图冒充运行结果。
+建议另录 1–3 分钟审核演示：两端版本 → USB 真实画面/书写/双指 → 保存重开 → 拔插恢复。iPad 自带录屏即可拍操作，Mac 录屏可补保存与重开，不要求第二套设备；录屏不能拍到 Pencil 实物时，用说明交代输入。视频是帮助审核的建议材料，并非所有 App 的必填项，也不是商店 App Preview。
+
+四、之后需获得单独授权的对外动作（本轮不执行）
+给审核员提供可匿名下载的精确 Mac 公证包和安装说明，并更新支持/隐私页面。可仅部署核验后的 Mac ZIP、SHA256SUMS 和公开文档，不公开源码、IPA、archive、dSYM、日志、私有联系人或签名配置。
+公开支持页面需要真实联系方式；Mac 下载 URL 与支持/隐私 URL 不能填本机路径或猜测尚不存在的地址。本人确认联系方式与部署位置后，再提出具体可审核的发布内容供授权。当前 public 目录与生成的 docs-only ZIP 均只是本地待发布材料。
+政策/支持/包就绪后，填 App Store Connect 私有草稿、问卷、截图并选择现有 build 12；保持手动发布。最终送审须另获明确授权，不能把本次“准备材料”当提交审核或公开发布授权。
+
+维护者本地入口（不安装、不上传）：
+python3 engineering/scripts/rc-release.py --root build/signing/0.3.0-b12/source check build/signing/0.3.0-b12/submission-assets --require-assets --verify-platform
+python3 engineering/scripts/store-materials.py --release build/signing/0.3.0-b12/submission-assets --source-root build/signing/0.3.0-b12/source --require-ready
+已有生成目录不覆盖；在临时生成目录通过校验后只替换当前 build12 导出，保留 build10/build11 冻结字节。
+现有解压运行 App 已保留在 build/local-run/0.3.0-b12/PadInk.app；原下载目录再次解压出的 App 也保持原位；严格送审资产目录为 build/signing/0.3.0-b12/submission-assets，只含清单声明文件，与原包共享不变字节，目录完整性逐项校验。

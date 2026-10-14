@@ -97,6 +97,10 @@ public final class PencilInjectionBackend {
   e.setIntegerValueField(.tabletEventDeviceID, value: 0x5049)
   e.setIntegerValueField(.tabletEventPointX, value: Int64(s.x * 65535)); e.setIntegerValueField(.tabletEventPointY, value: Int64(s.y * 65535))
   e.setIntegerValueField(.tabletEventPointButtons, value: contact ? 1 : 0)
+  // Pencil bridge v2: reserved Z contains the real UIKit phase. Reset is
+  // distinctly cancelled, so readers never treat connection cleanup as lift.
+  let phase = resetting ? PencilPhase.cancel.rawValue : s.phase
+  e.setIntegerValueField(.tabletEventPointZ, value: 0x50490000 | Int64(phase))
   let pressure = contact ? Double(s.pressure) : 0
   e.setDoubleValueField(.mouseEventPressure, value: pressure); e.setDoubleValueField(.tabletEventPointPressure, value: pressure)
   e.setDoubleValueField(.tabletEventTiltX, value: s.tilt.0); e.setDoubleValueField(.tabletEventTiltY, value: s.tilt.1)

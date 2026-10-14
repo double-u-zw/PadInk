@@ -390,7 +390,12 @@ private struct PadConnectionSettings: View {
 private struct PadHelpView: View {
  var body: some View {
   Form {
-   Section("首次连接") { PadConnectionSteps().padding(.vertical, 6) }
+   Section("首次连接") {
+    PadConnectionSteps().padding(.vertical, 6)
+    Text("需要你自己的 Mac（macOS 14 或更新版本）、Mac 端 PadInk 和 USB 数据线。Mac 辅助端需单独下载安装，并允许屏幕录制与辅助功能。iPad 需运行 iPadOS 17 或更新版本；手写需兼容的 Apple Pencil。")
+     .font(.callout).foregroundStyle(.secondary)
+    Link("下载 Mac 辅助端", destination: ProductLinks.macDownloads)
+   }
    Section("书写与触控") {
     guidance("Pencil 书写", symbol: "pencil.tip", detail: "先在 Mac 应用中选择笔、橡皮或批注工具，再在 iPad 上操作。文档由 Mac 应用保存。")
     guidance("手指操作", symbol: "hand.draw", detail: "单指点击、双击和拖动；双指滚动和捏合缩放。在顶部或设置中可切换为仅 Pencil 模式。")
@@ -443,6 +448,7 @@ private struct PadDiagnosticsView: View {
    Section("隐私") {
     Text("诊断只保存在本机，记录连接、性能、故障和构建信息，不包含触控坐标、压力、文档名、窗口标题或画面。由你决定是否分享。")
      .font(.callout).foregroundStyle(.secondary)
+    Link("隐私政策", destination: ProductLinks.privacy)
    }
    Section("闪退报告") {
     Text("打开 iPad 设置 › 隐私与安全性 › 分析与改进 › 分析数据，找到问题发生时的 PadInk 条目并分享。Mac 可在“控制台”App 的“崩溃报告”中找到同一时间的报告。")
@@ -469,6 +475,13 @@ private struct PadAboutView: View {
    Section("安装与更新") {
     if model.buildIdentity.isDeveloperInstall, let reminder = model.signingReminder { Label(reminder, systemImage: "calendar.badge.exclamationmark").foregroundStyle(.orange) }
     Text(model.buildIdentity.installationGuidance).font(.callout).foregroundStyle(.secondary)
+    Link("下载 Mac 辅助端", destination: ProductLinks.macDownloads)
+   }
+   Section("隐私与支持") {
+    Text("Mac 画面与输入只在配对设备间传输。PadInk 没有云端账户、广告或自动上传诊断；可在连接设置中忘记设备。")
+     .font(.callout).foregroundStyle(.secondary)
+    Link("隐私政策", destination: ProductLinks.privacy)
+    Link("支持与反馈", destination: ProductLinks.support)
    }
    Section {
     DisclosureGroup("构建详情") {

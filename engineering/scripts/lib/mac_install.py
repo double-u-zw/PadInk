@@ -184,8 +184,8 @@ def install(source, destination, receipt):
     info = plistlib.loads((source / "Contents/Info.plist").read_bytes())
     if app_name == "PadInk Dev.app" and (info.get("PadInkBuildVariant") != "development" or not info.get("CFBundleIdentifier", "").endswith(".development")):
         raise InstallError("PadInk Dev 必须使用独立开发版身份。")
-    if app_name == "PadInk.app" and info.get("PadInkBuildVariant") == "development":
-        raise InstallError("开发版不能以正式版名称安装。")
+    if info.get("PadInkBuildVariant") == "development" and not info.get("CFBundleIdentifier", "").endswith(".development"):
+        raise InstallError("日常构建必须保留现有 development 身份。")
     identity = app_identity(source, verify=True)
     destination.mkdir(parents=True, exist_ok=True)
     target, legacy = destination / app_name, destination / legacy_name

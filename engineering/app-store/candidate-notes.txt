@@ -1,0 +1,9 @@
+PadInk 0.3.0 build 12
+Current candidate: iPad TestFlight/App Store + Apple Silicon (arm64) Developer ID signed, notarized and stapled Mac companion.
+PadInk mirrors the user's own Mac main display. Apple Pencil and touch operate the active Mac application; that application saves documents. Deployment targets: macOS14+ / iPadOS17+. Handwriting requires a compatible Pencil and USB data cable. Current app interface: Simplified Chinese. Ecru and other target apps are separately installed, not included.
+
+The exact frozen app source is e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89 (app-input SHA-256 6d912b4a07671f2be558fcb1a8678232667adf3d97454d54bb47bf7ff7929c4e). No app code/config change or recompilation is part of subsequent submission material preparation. Upload preparation re-signed the same archive; executable content after signature removal, Info.plist and dSYM UUIDs match the original export. The submitted IPA is retained separately from the historical pre-upload export.
+
+Mac notarization is Accepted and stapled. TestFlight build12 is uploaded and processed. The owner confirmed using both formal-channel build12 apps without observed problems. Prior RC1 USB acceptance remains the baseline. Detailed channel-change checks (Developer Mode off, Xcode/AltServer exited, Pencil/two-finger/reconnect/document tasks), approved real screenshots, owner questionnaire answers, reviewer contact and accessible companion/support documents remain recorded separately. No external-device first-install or minimum-OS validation is claimed. Reviewer demo video is recommended, not universally required.
+
+No App Store/Beta review submission or public release has been performed. Mac access through system usbmuxd is undocumented; no Apple compatibility/review exemption is claimed. Existing Intel signed assets are private historical bytes excluded from this candidate. Public Beta3/build11 and historical build10/build11 materials keep their original versions.

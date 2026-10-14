@@ -39,6 +39,6 @@ iPad 免费签名约 **7 天**有效。续签时保持自己的 Mac 开机、Alt
 
 ## 源码与后续发行
 
-既有公开源码采用 [MIT](LICENSE)。**本次仅发布安装包和用户文档，修复源码未公开**；GitHub 自动生成的 Source code 附件仍是已有公开基线，不能复现本次修复包，安装请使用上面的 Beta ZIP。实际构建标识见包内 `VERSIONS.json` 及两端关于页面；开发资料见[开发者指南](docs/开发者指南.md)。
+当前 `main` 提供 build 12 的最新源码、回归测试、工程工具和文档，采用 [MIT](LICENSE)。历史 Beta 3 tag 的 Source code 附件仍是当时的公开基线；获取最新源码请克隆 `main`。本机签名配置、证书、凭据和设备数据不公开。普通安装继续使用上面的 Beta ZIP；源码构建见[开发者指南](docs/开发者指南.md)，实际安装包身份见包内 `VERSIONS.json` 及两端关于页面。
 
-正式发行目标是 iPad App Store + Mac Developer ID 签名与 Apple 公证包，目前尚无这些正式下载入口。当前 GitHub Beta 仍使用 AltStore，不等于 TestFlight 或 App Store 发布。详情见[发布流程](docs/RELEASE.md)。本机开发版 PadInk Dev 与公开 PadInk 分开安装。
+正式发行目标是 iPad App Store + Mac Developer ID 签名与 Apple 公证包，目前尚无这些正式公开下载入口。当前 GitHub Beta 仍使用 AltStore。0.3.0 / build 12 已完成 M 系列 Mac 公证与 TestFlight 上传处理，维护者已确认使用这套组合初步试用未发现问题；完整逐项验收和外部设备首装尚未完成，未提交 App Store 审核或公开发布 build 12 安装包。详情见[发布流程](docs/RELEASE.md)。开发身份与正式身份的设置、配对和服务彼此独立。

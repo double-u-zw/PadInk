@@ -4,7 +4,7 @@ set -uo pipefail
 cd "${0:A:h:h:h}"
 variant=${PADINK_BUILD_VARIANT:-development}
 [[ "$variant" == development || "$variant" == release ]] || { print "PADINK_BUILD_VARIANT must be development or release"; exit 1; }
-app_name=PadInk; [[ "$variant" != development ]] || app_name="PadInk Dev"
+app_name=PadInk; [[ "$variant" != development ]] || app_name="PadInk"
 default_installer=xcode; [[ "$variant" != development ]] || default_installer=altstore
 ipad_installer=${PADINK_IPAD_INSTALLER:-$default_installer}
 [[ "$ipad_installer" == altstore || "$ipad_installer" == xcode ]] || { print "PADINK_IPAD_INSTALLER must be altstore or xcode"; exit 1; }

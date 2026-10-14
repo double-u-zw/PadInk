@@ -1,0 +1,19 @@
+PadInk 0.3.0 / build 12 — App Store materials
+
+本目录维护当前候选的商店材料。build12 已上传/处理，arm64 Mac 已签名、公证和附票据；本人确认初步试用。App Store Connect 中英文文案/副标题/分类与 build12 选择已保存；审核备注待本人私有联系人齐备。未提交 App Store/Beta 审核，未公开发布；缺失字段保持显式待确认。
+
+先看 after-membership.txt：本人需提供的信息、私有审核联系人填写位置、问卷草稿、一次拍摄/渠道补验及之后须单独授权的对外动作已集中在这一份现有清单，不重复建立文档。
+metadata.json：可复制的中英文文案、正式身份、实际公证包哈希；submissionProposals 是依据源码与 Apple 文档准备的问卷草稿，与最终声明隔离。null 最终字段不会因草稿存在而通过检查。标准 EULA、手动发布和分类已作为准备项注明。
+review-zh.txt / review-en.txt：精简双端安装、USB 和文稿操作，明确 M 系列要求、无 PadInk 登录、第三方应用单独安装，以及已知实现边界；各自不超过4000 UTF-8字节。
+public/support.txt / public/mac-install.txt：公开文案本地草稿。唯一隐私政策来源 docs/PRIVACY.md；导出时使用同一文件。公开联系和下载地址未确认前不发布。
+screenshots.json / capture.txt：真实功能图的3个场景、原图与13英寸商店画布要求、排除的历史/DEBUG参考图，及建议的审核演示。视频非所有App的通用必填，reviewVideoRequired=true 时才成为显式阻塞项。
+
+本地检查/导出：
+python3 engineering/scripts/rc-release.py --root build/signing/0.3.0-b12/source check build/signing/0.3.0-b12/submission-assets --require-assets --verify-platform
+python3 engineering/scripts/store-materials.py --release build/signing/0.3.0-b12/submission-assets --source-root build/signing/0.3.0-b12/source --out build/app-store/materials-build12
+python3 engineering/scripts/store-materials.py --release build/signing/0.3.0-b12/submission-assets --source-root build/signing/0.3.0-b12/source --require-ready
+生成目录不得原地覆盖；已有当前导出使用新临时目录生成、检查后替换，历史 build10/build11 只校验原字节。准备材料不安装、不联网、不签名、不上传。
+
+导出字段TXT及 PadInk-store-materials.zip 仅供维护者；PadInk-public-documents-only.zip 只包含支持、隐私和安装文案，无源码、IPA、账户/签名配置、私有联系人。私有审核联系人留在 ignored build/signing/0.3.0-b12/review-contact.private.json 或自行在 App Store Connect 填写，不把个人账号邮箱自动设为公开联系方式。
+
+实际二进制源于私有干净提交 e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89。后续材料/工具修改单独留存，不冒充重新编译。公开 Beta3/build11 与 materials-build10、materials-build11 保持真实历史版本。当前 TestFlight 主资产是实际上传的 submitted.ipa；原 upload-candidate.ipa 只保留为历史打包证据，不重复上传。Intel 排除在本轮正式候选范围。

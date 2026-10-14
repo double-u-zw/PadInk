@@ -17,7 +17,7 @@ public enum ProductIdentity {
  public static func namespace(for variant: Variant) -> Namespace {
   switch variant {
   case .release: return Namespace(displayName: "PadInk", keychainService: "dev.padink03.trust", bonjourServiceType: "_pnk2._tcp", usbLoopbackPort: 42371)
-  case .development: return Namespace(displayName: "PadInk Dev", keychainService: "dev.padink03.trust.development", bonjourServiceType: "_pnk2-dev._tcp", usbLoopbackPort: 42372)
+  case .development: return Namespace(displayName: "PadInk", keychainService: "dev.padink03.trust.development", bonjourServiceType: "_pnk2-dev._tcp", usbLoopbackPort: 42372)
   }
  }
  public static var displayName: String { namespace(for: buildVariant).displayName }

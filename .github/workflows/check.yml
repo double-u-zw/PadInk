@@ -1,0 +1,49 @@
+name: Check event checkout (unsigned)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unsigned-check:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the event SHA (PR merge commit for pull_request)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Select installed Xcode 26.3
+        run: |
+          test -d /Applications/Xcode_26.3.app/Contents/Developer
+          echo 'DEVELOPER_DIR=/Applications/Xcode_26.3.app/Contents/Developer' >> "$GITHUB_ENV"
+      - name: Run the shared credential-free checks
+        env:
+          PADINK_CHECK_SCOPE: ci
+          PADINK_BUILD_ROOT: build/check-ci
+          PADINK_RELEASE_CHECK: daily
+        run: ./engineering/scripts/build-and-test.sh
+      - name: Identify the checked source, not a released installer
+        if: always()
+        shell: python
+        run: |
+          import json, os
+          from pathlib import Path
+          path = Path('build/check-ci/check-provenance.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('Checks apply only to the event checkout. No signing, install, release upload, private source upload or device acceptance.\n\n')
+              if path.exists():
+                  data = json.loads(path.read_text())
+                  source = data['source']
+                  summary.write(f"Result: {data['result']}\n\nCommit: `{source['head']}`\n\nApp inputs SHA-256: `{source['sourceSHA256']}`\n\nFull tree SHA-256: `{source['treeSHA256']}`\n")
+              else:
+                  summary.write('Provenance unavailable; checks did not complete.\n')
+    # Deliberately no upload-artifact, signing secrets or publication steps.

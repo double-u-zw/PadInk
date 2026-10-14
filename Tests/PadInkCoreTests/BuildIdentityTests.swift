@@ -2,6 +2,20 @@ import XCTest
 @testable import PadInkCore
 
 final class BuildIdentityTests: XCTestCase {
+ func testStoreAndTestFlightShareBinaryWithoutDeveloperExpiryGuidance() {
+  XCTAssertEqual(BuildIdentity.resolvedDistribution(declared: "testflight", receiptName: "receipt"), "appstore")
+  XCTAssertEqual(BuildIdentity.resolvedDistribution(declared: "appstore", receiptName: "sandboxReceipt"), "testflight")
+  XCTAssertEqual(BuildIdentity.resolvedDistribution(declared: "testflight", receiptName: nil), "testflight")
+  XCTAssertEqual(BuildIdentity.resolvedDistribution(declared: "altstore", receiptName: "receipt"), "altstore")
+  for distribution in ["appstore", "testflight", "unsigned"] {
+   let build = BuildIdentity(version: "0.3.0", source: "label", channel: "release", distribution: distribution)
+   XCTAssertFalse(build.usesProvisioningExpiryReminder)
+   XCTAssertFalse(build.installationGuidance.contains("7 天"))
+   if distribution == "appstore" { XCTAssertTrue(build.installationGuidance.contains("App Store")) }
+  }
+  XCTAssertTrue(BuildIdentity(version: "0.3.0", source: "label", distribution: "developer").usesProvisioningExpiryReminder)
+  XCTAssertTrue(BuildIdentity(version: "0.3.0", source: "label", distribution: "altstore").usesProvisioningExpiryReminder)
+ }
  func testEditionIsSeparateFromCandidateChannelAndInstallationMethod() {
   let dev = BuildIdentity(version: "0.3.0", source: "label", channel: "development", distribution: "altstore", variant: "development")
   let rc = BuildIdentity(version: "0.3.0", source: "label", channel: "rc", distribution: "altstore", variant: "release")

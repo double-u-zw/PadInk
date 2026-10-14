@@ -2,7 +2,7 @@
 
 ## 当前工程与事实
 
-以当前 Git checkout 为开发根目录。对外发布的正式版统一为 PadInk（包括 Beta/RC），公开下载只按 Mac 芯片区分；本机源码开发和内部自用才称 PadInk Dev。正式版 Mac 路径 `/Applications/PadInk.app`；开发版为 PadInk Dev，路径 `/Applications/PadInk Dev.app`。两版 bundle ID、设置、配对 Keychain、USB 端口与 Bonjour 服务分离；旧 PadInk 仍使用正式版的原命名空间。Mac 安装包分别构建 arm64 / x86_64，不用开发版替换正式版。日常开发版 iPad 采用官方 AltStore + AltServer 管理安装与续签；更新命令默认安装 Mac 并准备 IPA，双端 Xcode 安装只在显式 PADINK_IPAD_INSTALLER=xcode 时执行。版本只由 Git commit / tag、App Version / Build 与 RC / Release 管理。
+以当前 Git checkout 为开发根目录。对外发布及本机开发身份的界面与 App 文件名均为 PadInk；历史 PadInk Dev 指 development 身份。正式版 Mac 路径 `/Applications/PadInk.app`；开发安装须通过 `PADINK_INSTALL_DIRECTORY` 指定独立目录，安装器拒绝覆盖不同 bundle ID 或团队。两版 bundle ID、设置、配对 Keychain、USB 端口与 Bonjour 服务分离；正式版保留原命名空间。当前正式候选只分发 arm64，历史 Beta 的 arm64 / x86_64 资产保持冻结。日用 iPad 为 TestFlight build 12，Mac 为配套的公证 RC build 12。源码开发 iPad 可采用官方 AltStore + AltServer 管理安装与续签；更新命令默认安装 Mac 并准备 IPA，双端 Xcode 安装只在显式 PADINK_IPAD_INSTALLER=xcode 时执行。版本只由 Git commit / tag、App Version / Build 与 RC / Release 管理。
 
 README 是入口，docs 仅保留当前架构、协议、支持范围、安装、开发、发布与隐私文档。archives 只保留完整 Git 恢复备份、Git 无法恢复的最小源码差异、当前 Fixtures 缺少的不可替代原始样本和必要安装恢复材料；归档位置由维护者本机管理，不进入公开仓库。不长期保存阶段、调查、审计、交付和验收叙事、重复日志或截图。
 

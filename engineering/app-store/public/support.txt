@@ -1,0 +1,21 @@
+PadInk 技术支持 / Support — 0.3.0 build 12 正式渠道说明草稿
+
+当前正式公开下载尚未开放。build12 已完成 TestFlight 处理及 M 系列 Mac 公证，本人已确认初步试用，外部设备未验证。现有 GitHub Beta 3 / build 11 为未公证 Mac + AltStore 测试版，不能代替正式版。正式 iPad 由 App Store 安装，发行前由 TestFlight 测试；Mac 辅助端将由 GitHub Release 单独提供 Developer ID 签名且公证的包。
+正式 Mac 精确下载链接：待发布后确认。
+
+需要搭载 Apple Silicon（M 系列）且运行 macOS 14+、iPadOS 17+、可传数据 USB 线；手写需要兼容 Apple Pencil。当前界面为简体中文。PadInk 镜像自己的 Mac 主屏并发送笔／触控输入，文稿由目标应用保存，第三方应用另行安装。
+USB：两端运行，iPad 解锁且保持前台，系统询问时信任电脑，再在两端允许 PadInk 配对。VPN 保持开启。
+有连接无画面：检查 Mac 屏幕录制权限，按系统提示退出重开。
+有画面无输入：检查 Mac 辅助功能、目标文稿焦点与笔工具；手指操作需 iPad 设置开启。
+不连接：检查数据线、系统信任、设备解锁、两端版本与前台状态；先重连，不卸载、不删除配对。
+缩放不可用：能力依赖目标应用与文稿焦点；用应用自己的控件。PowerPoint 缩放可能需要自动化权限。
+
+公开反馈／隐私请求联系入口：https://github.com/double-u-zw/PadInk/issues
+阅读无需登录；发帖需 GitHub 账户。公开 Issues 不适合敏感资料。正式支持页的公开联系方式（邮箱等）尚待维护者确认；Issues 可供当前反馈，但不能把联系资料缺失标为商店就绪。
+提供两端版本/build、设备/系统、USB、目标应用版本、时间和复现步骤即可。诊断分享自愿；勿发送文稿、屏幕内容、密码、配对密钥、证书或本机签名配置。诊断可从 Mac“诊断”导出，iPad“设置 › 诊断”生成后分享。
+隐私政策：https://github.com/double-u-zw/PadInk/blob/main/docs/PRIVACY.md （正式内容更新待发布授权）
+
+Public distribution is not available yet. Build12 is processed in TestFlight and its Apple Silicon Mac companion is notarized; the owner confirmed initial use, while external devices remain unverified. The existing Beta 3 / build 11 GitHub beta uses an unnotarized Mac app and AltStore; it is not the official installer. The planned iPad channel is App Store, with TestFlight for testing, and a separate Developer ID signed, notarized Mac companion on GitHub Release. Exact signed download link: pending.
+Requires an Apple Silicon (M-series) Mac with macOS 14+, iPadOS 17+ and a USB data cable; handwriting needs a compatible Apple Pencil. The interface is Simplified Chinese. The active Mac application saves your documents and must be installed separately.
+Keep both apps open and iPad unlocked/in the foreground. Trust the Mac if iPadOS asks, then allow PadInk pairing on both devices. Keep the VPN enabled. A connection without video indicates Screen Recording permission. Video without input indicates Accessibility permission, document focus or the pen tool. Finger control must be enabled in iPad settings. Check cable, system trust, versions and foreground state for connection problems; reconnect before changing pairing. Zoom depends on the target application; PowerPoint zoom may request Automation permission.
+Public support and privacy-request contact: https://github.com/double-u-zw/PadInk/issues (read without login; posting needs a GitHub account). A public support contact (such as an email address) is pending; Issues alone must not be marked as a complete store support page. Provide device/system, both app builds, target app version, time and reproduction steps. Diagnostic sharing is optional. Do not post private documents, screen contents, passwords, pairing keys, certificates or local signing configuration. See the privacy policy linked above.

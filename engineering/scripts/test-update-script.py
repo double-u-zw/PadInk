@@ -26,7 +26,7 @@ if name == 'xcodebuild':
     if scheme == 'PadInkPad' and settings.get('CODE_SIGNING_ALLOWED') != 'NO' and os.environ.get('PADINK_TEST_APP_ID_LIMIT'):
         print('App ID limit reached', file=sys.stderr); sys.exit(1)
     variant = settings.get('PADINK_BUILD_VARIANT','release')
-    app_name = 'PadInk Dev' if variant == 'development' else 'PadInk'
+    app_name = 'PadInk' if variant == 'development' else 'PadInk'
     derived = Path(args[args.index('-derivedDataPath') + 1])
     app = derived / 'Build/Products' / ('Release' if scheme == 'PadInkMac' else 'Release-iphoneos') / (app_name + '.app')
     app.mkdir(parents=True, exist_ok=True)
@@ -138,22 +138,17 @@ class UpdateScriptTests(unittest.TestCase):
     def test_development_install_preserves_release_and_legacy_apps(self):
         self.make_old_app(self.current, 'dev.padink03.abc1234567.mac')
         result = self.run_installer(confirm=True, PADINK_BUILD_VARIANT='development', PADINK_IPAD_INSTALLER='xcode')
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        dev = self.install / 'PadInk Dev.app'
-        self.assertTrue((dev / 'new-version').exists())
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('bundle ID', result.stdout + result.stderr)
         self.assertTrue((self.current / 'old-version').exists())
         self.assertTrue((self.previous / 'old-version').exists())
-        receipt = json.loads(next((self.root / 'build/update').glob('*/mac-install.json')).read_text())
-        self.assertEqual(receipt['appName'], 'PadInk Dev.app')
-        self.assertIsNone(receipt['legacy'])
 
     def test_development_default_prepares_altstore_ipa_without_device_install_or_provisioning(self):
-        self.make_old_app(self.current, 'dev.padink03.abc1234567.mac')
+        self.make_old_app(self.current, 'dev.padink03.abc1234567.mac.development')
+        shutil.rmtree(self.previous)
         result = self.run_installer(PADINK_BUILD_VARIANT='development', PADINK_TEST_APP_ID_LIMIT='1')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertTrue((self.install / 'PadInk Dev.app/new-version').exists())
-        self.assertTrue((self.current / 'old-version').exists())
-        self.assertTrue((self.previous / 'old-version').exists())
+        self.assertTrue((self.install / 'PadInk.app/new-version').exists())
         metadata = json.loads(next((self.root / 'build/update').glob('*/altstore/PadInk-Dev-AltStore.json')).read_text())
         self.assertEqual(metadata['bundleIdentifier'], 'dev.padink.altstore.ipad.development')
         self.assertEqual(metadata['releaseChannel'], 'development')

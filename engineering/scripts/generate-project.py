@@ -34,7 +34,7 @@ for name, platform, folder, kit in [('PadInkMac', 'macosx', 'Hosts/Mac', 'PadInk
         rel = folder + '/' + filename
         ref = obj(rel, 'PBXFileReference', lastKnownFileType=filetype, path=rel, sourceTree='<group>'); files.append(ref)
         resources.append(obj(name + rel, 'PBXBuildFile', fileRef=ref))
-    product = obj(name + 'product' , 'PBXFileReference', explicitFileType='wrapper.application', path='PadInk Dev.app', sourceTree='BUILT_PRODUCTS_DIR'); products.append(product)
+    product = obj(name + 'product' , 'PBXFileReference', explicitFileType='wrapper.application', path='PadInk.app', sourceTree='BUILT_PRODUCTS_DIR'); products.append(product)
     deps, links = [], []
     for module in ['PadInkCore', kit]:
         dep = obj(name + module, 'XCSwiftPackageProductDependency', productName=module); deps.append(dep); links.append(obj(name + module + 'link', 'PBXBuildFile', productRef=dep))
@@ -49,7 +49,7 @@ for name, platform, folder, kit in [('PadInkMac', 'macosx', 'Hosts/Mac', 'PadInk
     else:
         settings.update(PRODUCT_BUNDLE_IDENTIFIER='$(PADINK_IPAD_BUNDLE_ID)', TARGETED_DEVICE_FAMILY='2', SUPPORTED_PLATFORMS='iphoneos iphonesimulator',
                         SUPPORTS_MACCATALYST='NO', SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD='NO')
-    tid = obj(name, 'PBXNativeTarget', name=name, productName='PadInk Dev', productReference=product, productType='com.apple.product-type.application',
+    tid = obj(name, 'PBXNativeTarget', name=name, productName='PadInk', productReference=product, productType='com.apple.product-type.application',
               buildConfigurationList=configs(name, settings, xcconfig), buildPhases=phases, buildRules=[], dependencies=[], packageProductDependencies=deps)
     targets.append(tid)
 group = obj('main', 'PBXGroup', children=list(dict.fromkeys(files)) + [obj('products', 'PBXGroup', name='Products', children=products, sourceTree='<group>')], sourceTree='<group>')
@@ -60,7 +60,7 @@ p = root / 'PadInk.xcodeproj'; p.mkdir(exist_ok=True)
 (p / 'project.pbxproj').write_text('// !$*UTF8*$!\n' + serialize(dict(archiveVersion=1, classes={}, objectVersion=56, objects=objects, rootObject=project)) + '\n')
 schemes = p / 'xcshareddata/xcschemes'; schemes.mkdir(parents=True, exist_ok=True)
 for name in ['PadInkMac', 'PadInkPad']:
-    ref = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{ident(name)}" BuildableName="PadInk Dev.app" BlueprintName="{name}" ReferencedContainer="container:PadInk.xcodeproj"/>'
+    ref = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{ident(name)}" BuildableName="PadInk.app" BlueprintName="{name}" ReferencedContainer="container:PadInk.xcodeproj"/>'
     (schemes / (name + '.xcscheme')).write_text(f'''<?xml version="1.0" encoding="UTF-8"?><Scheme LastUpgradeVersion="2700" version="1.7"><BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES"><BuildActionEntries><BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">{ref}</BuildActionEntry></BuildActionEntries></BuildAction><TestAction buildConfiguration="Debug"/><LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" launchStyle="0"><BuildableProductRunnable runnableDebuggingMode="0">{ref}</BuildableProductRunnable></LaunchAction><ProfileAction buildConfiguration="Release"/><AnalyzeAction buildConfiguration="Debug"/><ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/></Scheme>''')
 common = {'CFBundleDevelopmentRegion': 'zh-Hans', 'CFBundleDisplayName': '$(PADINK_DISPLAY_NAME)', 'CFBundleName': '$(PRODUCT_NAME)', 'CFBundleExecutable': '$(EXECUTABLE_NAME)',
           'CFBundleIdentifier': '$(PRODUCT_BUNDLE_IDENTIFIER)', 'CFBundleInfoDictionaryVersion': '6.0', 'CFBundlePackageType': 'APPL',
@@ -70,11 +70,11 @@ common.update(PadInkBuildVariant='$(PADINK_BUILD_VARIANT)')
 common.update(NSLocalNetworkUsageDescription='在同一局域网发现已配对的设备，并加密传输画面和输入。', NSBonjourServices=['$(PADINK_BONJOUR_SERVICE_TYPE)'])
 mac = dict(common, LSUIElement=True, LSMinimumSystemVersion='$(MACOSX_DEPLOYMENT_TARGET)', NSHighResolutionCapable=True, NSHumanReadableCopyright='PadInk',
            NSScreenCaptureUsageDescription='把 Mac 主屏显示到 iPad。', NSAppleEventsUsageDescription='通过 PowerPoint 的公开接口调整当前演示文稿视图的缩放比例。')
-ipad = dict(common, LSRequiresIPhoneOS=True, UILaunchScreen={}, UIRequiresFullScreen=True, UIStatusBarHidden=True, UIViewControllerBasedStatusBarAppearance=True,
+ipad = dict(common, LSRequiresIPhoneOS=True, ITSAppUsesNonExemptEncryption=False, UILaunchScreen={}, UIRequiresFullScreen=True, UIStatusBarHidden=True, UIViewControllerBasedStatusBarAppearance=True,
             UISupportedInterfaceOrientations=['UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight'],
             UIApplicationSupportsIndirectInputEvents=False, UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes': False})
 (root / 'Hosts/Mac/Info.plist').write_bytes(plistlib.dumps(mac))
 (root / 'Hosts/iPad/Info.plist').write_bytes(plistlib.dumps(ipad))
-print('Generated PadInk.xcodeproj: PadInkMac, PadInkPad ("PadInk Dev.app" by default)')
+print('Generated PadInk.xcodeproj: PadInkMac, PadInkPad ("PadInk.app" by default)')
 
 (root / 'Hosts/Mac/PadInkMac.entitlements').write_bytes(plistlib.dumps({'com.apple.security.automation.apple-events': True}))

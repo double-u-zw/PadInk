@@ -15,7 +15,7 @@ BUNDLE_ID = 'dev.padink.altstore.ipad'
 def build(output, channel=None, variant='release'):
     if variant not in {'development', 'release'}: raise ValueError('Unknown build variant.')
     channel = channel or ('development' if variant == 'development' else 'rc')
-    app_name = 'PadInk Dev' if variant == 'development' else 'PadInk'
+    app_name = 'PadInk' if variant == 'development' else 'PadInk'
     bundle_id = BUNDLE_ID + ('.development' if variant == 'development' else '')
     prefix = 'PadInk-Dev-AltStore' if variant == 'development' else 'PadInk-AltStore'
     if channel not in {'development', 'rc'}:

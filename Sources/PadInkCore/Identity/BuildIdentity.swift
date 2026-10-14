@@ -3,7 +3,7 @@ import Foundation
 /// Local build provenance. HELLO continues to carry only the existing short source label.
 public struct BuildIdentity: Equatable {
  public enum Channel: String, Codable { case development, rc, release, preview }
- public enum Distribution: String, Codable { case developer, altstore, testflight, direct, unsigned, unknown }
+ public enum Distribution: String, Codable { case developer, altstore, testflight, appstore, direct, unsigned, unknown }
  public let version: String, source: String, build: String
  public let channel: Channel, distribution: Distribution
  public let variant: ProductIdentity.Variant
@@ -32,10 +32,20 @@ public struct BuildIdentity: Equatable {
  public static var current: BuildIdentity { from(bundle: .main) }
  public static func from(bundle: Bundle) -> BuildIdentity {
   let value: (String) -> String? = { bundle.object(forInfoDictionaryKey: $0) as? String }
+  let distribution = resolvedDistribution(declared: value("PadInkDistribution"), receiptName: bundle.appStoreReceiptURL?.lastPathComponent)
   return BuildIdentity(version: value("CFBundleShortVersionString") ?? "0.3.0-dev", source: value("PadInkSourceCommit"),
-   build: value("CFBundleVersion"), channel: value("PadInkReleaseChannel"), distribution: value("PadInkDistribution"),
+   build: value("CFBundleVersion"), channel: distribution == "appstore" ? "release" : value("PadInkReleaseChannel"), distribution: distribution,
    sourceRevision: value("PadInkSourceRevision"), sourceDigest: value("PadInkSourceDigest"), variant: value("PadInkBuildVariant"))
  }
+ /// App Store and TestFlight distribute the same uploaded binary. Only a production receipt
+ /// changes the installation guidance; missing receipts keep the declared channel.
+ public static func resolvedDistribution(declared: String?, receiptName: String?) -> String? {
+  guard declared == "testflight" || declared == "appstore" else { return declared }
+  if receiptName == "sandboxReceipt" { return "testflight" }
+  if receiptName == "receipt" { return "appstore" }
+  return declared
+ }
+ public var usesProvisioningExpiryReminder: Bool { isDeveloperInstall || distribution == .altstore }
  /// Keep the source label and existing 32-byte HELLO limit; build/provenance stay local.
  public var wireVersion: String {
   let available = Hello.maxAppVersionBytes - source.utf8.count - 1
@@ -48,6 +58,7 @@ public struct BuildIdentity: Equatable {
   case .altstore:
    return "iPad 客户端通过官方 AltStore Classic 安装与续签。iPad 免费签名通常约 7 天有效；Mac 保持 AltServer 运行，在 AltStore 的 My Apps 中使用 Refresh All，或启用 Background Refresh。续签前结束书写；请保留 App 和原账号，不要卸载或停用 App。"
   case .testflight: return "通过 TestFlight 安装与更新 iPad 版本；更新 Mac 时使用发包者提供的同一版安装包。测试版本有效期以 TestFlight 显示为准。"
+  case .appstore: return "通过 App Store 安装与更新 iPad 版本，无需开发者模式或续签。Mac 辅助端从 PadInk 的 GitHub Releases 下载并安装；首次使用需允许屏幕录制与辅助功能，并在两端确认配对。"
   case .developer where isDeveloperInstall:
    return "Xcode 开发安装：免费 Apple ID 的 iPad 签名通常约 7 天有效，用原团队覆盖更新并保留设置与配对。日常开发推荐按开发者指南切换到官方 AltStore 管理安装与续签；Xcode 安装不会自动进入 AltStore 的管理列表。"
   case .unsigned: return "这是未签名预览构建，仅供开发检查。请向发包者获取签名的安装包。"

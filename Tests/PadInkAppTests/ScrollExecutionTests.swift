@@ -23,6 +23,7 @@ final class ScrollExecutionTests: XCTestCase {
   var events: [CGEvent] = [], pencilEvents: [CGEventType] = [], rejects: [GestureNotice] = []
   var workers: [() -> Void] = [], completions: [() -> Void] = [], timers: [(UInt64, () -> Void)] = []
   var probes = 0
+  var receivedTarget: ZoomTargetSnapshot?
   var zoom: ZoomController!, touch: TouchInputPipeline!, pencil: PencilInputPipeline!
   let target: ZoomTargetSnapshot
   init(_ family: ApplicationFamily = .goodnotes) throws {
@@ -49,7 +50,7 @@ final class ScrollExecutionTests: XCTestCase {
    for item in items {
     guard case .frame(let decoded) = item else { XCTFail("known input was ignored"); continue }
     try MacCoordinator.receiveInput(decoded, stamp: ReceiveStamp(localTime: now), now: now, input: input,
-     targetRevision: target.revision, target: target, pencil: pencil, touch: touch)
+     targetRevision: target.revision, target: receivedTarget ?? target, pencil: pencil, touch: touch)
    }
   }
   func send(_ event: TouchEvent) throws {
@@ -104,22 +105,44 @@ final class ScrollExecutionTests: XCTestCase {
   XCTAssertEqual(points.reduce(0, +), -30)
   XCTAssertEqual(f.events.compactMap { NSEvent(cgEvent: $0)?.scrollingDeltaY }.reduce(0, +), -30, accuracy: 1)
  }
- func testBothVerticalAndHorizontalDirectionsKeepSignAndAxes() throws {
+ func testGoodnotesHorizontalCorrectionKeepsVerticalAndOtherApplicationsUnchanged() throws {
+  for family in [ApplicationFamily.goodnotes, .preview, .safari, .chrome, .powerpoint, .generic] {
   for horizontal in [false, true] { for direction in [Float(-1), Float(1)] {
-   let f = try Fixture(); try scroll(f, dx: horizontal ? direction * 0.01 : 0, dy: horizontal ? 0 : direction * 0.01)
+   let f = try Fixture(family); try scroll(f, dx: horizontal ? direction * 0.01 : 0, dy: horizontal ? 0 : direction * 0.01)
    f.drain(); assertScrollOnly(f, sequences: [1, 2, 3, 4])
+   let sign = horizontal && family == .goodnotes ? 1.0 : -1.0
    for e in f.events[1...2] {
     let moved = e.getIntegerValueField(horizontal ? .scrollWheelEventPointDeltaAxis2 : .scrollWheelEventPointDeltaAxis1)
-    XCTAssertLessThan(Double(moved) * Double(direction), 0)
+    XCTAssertGreaterThan(Double(moved) * Double(direction) * sign, 0)
     XCTAssertEqual(e.getIntegerValueField(horizontal ? .scrollWheelEventPointDeltaAxis1 : .scrollWheelEventPointDeltaAxis2), 0)
+    let appKit = try XCTUnwrap(NSEvent(cgEvent: e))
+    XCTAssertGreaterThan((horizontal ? appKit.scrollingDeltaX : appKit.scrollingDeltaY) * Double(direction) * sign, 0)
    }
-  } }
+  } } }
+ }
+ func testHorizontalDirectionUsesBeganTargetUntilGestureEnds() throws {
+  let f = try Fixture()
+  try f.send(event(1, .began))
+  f.receivedTarget = ZoomTargetSnapshot(revision: f.target.revision, pid: f.target.pid, family: .generic,
+   app: f.target.app, window: f.target.window)
+  try f.send(event(2, .changed, dx: 0.01)); try f.send(event(3, .ended))
+  XCTAssertGreaterThan(f.events[1].getIntegerValueField(.scrollWheelEventPointDeltaAxis2), 0,
+   "later reception snapshots cannot change an admitted Goodnotes gesture")
+  try f.send(event(1, .began, id: 2)); try f.send(event(2, .changed, dx: 0.01, id: 2))
+  try f.send(event(3, .ended, id: 2))
+  XCTAssertLessThan(f.events[4].getIntegerValueField(.scrollWheelEventPointDeltaAxis2), 0,
+   "a new gesture must use its own target without retaining Goodnotes compensation")
+  f.drain(); assertScrollOnly(f, sequences: [1, 2, 3, 1, 2, 3])
  }
  func testSyntheticTwoFingerTranslationClassifiesScrollAndReachesSerializedIngress() throws {
+  for horizontal in [false, true] {
   for direction in [-1.0, 1.0] {
    let f = try Fixture(); var classifier = GestureFSM(); classifier.touchEnabled = true
    let geometry = VideoGeometry(source: CGSize(width: 1920, height: 1080), bounds: CGRect(x: 0, y: 0, width: 1000, height: 1000))
-   func pair(_ offset: Double) -> [FingerPoint] { [FingerPoint(1, CGPoint(x: 400, y: 500 + offset)), FingerPoint(2, CGPoint(x: 600, y: 500 + offset))] }
+   func pair(_ offset: Double) -> [FingerPoint] {
+    [FingerPoint(1, CGPoint(x: 400 + (horizontal ? offset : 0), y: 500 + (horizontal ? 0 : offset))),
+     FingerPoint(2, CGPoint(x: 600 + (horizontal ? offset : 0), y: 500 + (horizontal ? 0 : offset)))]
+   }
    XCTAssertTrue(classifier.update(pair(0), now: 1_000_000_000).isEmpty)
    var actions = classifier.update(pair(direction * 20), now: 1_100_000_000)
    actions += classifier.update(pair(direction * 40), now: 1_116_000_000)
@@ -136,8 +159,10 @@ final class ScrollExecutionTests: XCTestCase {
    f.drain(); assertScrollOnly(f, sequences: [1, 2, 3, 4])
    XCTAssertEqual(f.events.compactMap { NSEvent(cgEvent: $0)?.phase }, [.began, .changed, .changed, .ended])
    XCTAssertEqual(f.events.map(\.location), Array(repeating: CGPoint(x: 860, y: 540), count: 4))
-   XCTAssertTrue(f.events[1...2].allSatisfy { Double($0.getIntegerValueField(.scrollWheelEventPointDeltaAxis1)) * direction < 0 })
-  }
+   let axis: CGEventField = horizontal ? .scrollWheelEventPointDeltaAxis2 : .scrollWheelEventPointDeltaAxis1
+   let sign = horizontal ? 1.0 : -1.0
+   XCTAssertTrue(f.events[1...2].allSatisfy { Double($0.getIntegerValueField(axis)) * direction * sign > 0 })
+  } }
  }
  private func fields(_ e: CGEvent) -> [String: Int64] {
   let fields: [(String, CGEventField)] = [
@@ -149,11 +174,16 @@ final class ScrollExecutionTests: XCTestCase {
    ("sourceState", .eventSourceStateID), ("sourcePID", .eventSourceUnixProcessID)]
   return Dictionary(uniqueKeysWithValues: fields.map { ($0.0, e.getIntegerValueField($0.1)) })
  }
- func testGoodnotesPreviewSafariChromeUseIdenticalScrollConstructionAndRecordFields() throws {
+ func testGoodnotesOnlyChangesHorizontalSignInSharedScrollConstruction() throws {
   var baseline: [[String: Int64]]?, locations: [CGPoint]?, report: [[String: Any]] = []
   for family in [ApplicationFamily.goodnotes, .preview, .safari, .chrome] {
    let f = try Fixture(family); try scroll(f, dx: 0.01, dy: 0.01); f.drain(); assertScrollOnly(f, sequences: [1, 2, 3, 4])
-   let actual = f.events.map(fields)
+   // Normalize only Goodnotes' horizontal compensation before comparing every other field.
+   let actual = f.events.map { e -> [String: Int64] in
+    var row = fields(e)
+    if family == .goodnotes { for key in ["integerX", "fixedXRaw", "pointX"] { row[key] = -row[key]! } }
+    return row
+   }
    if let baseline { XCTAssertEqual(actual, baseline); XCTAssertEqual(f.events.map(\.location), locations!) }
    else { baseline = actual; locations = f.events.map(\.location) }
    for e in f.events {

@@ -187,7 +187,7 @@ KEYFRAME_REQUEST 无 payload。VIDEO_CONFIG / VIDEO_FRAME 已实现（`Video/Vid
 
 扩展视频只在对端 HELLO 宣告 `extendedVideo` 时发送。未宣告的旧端保持原 H.264 / 最大 4096 路径，旧 H.264 config 字节不变。扩展端尺寸安全边界为每轴 8192（不是设备能力承诺）；HEVC config 在原 SPS/PPS 后追加 `codec u8=1, vpsLen u16, vps`，NAL 长度仍为 4 字节。H.264 keyframe 必须含 type 5，HEVC 必须含 type 19/20/21。接收端以 config 的 codec 验证帧，不得把 HEVC NAL 当 H.264。
 
-`VIDEO_FEEDBACK = videoGeneration u32, width u32, height u32, codec u8, congested u8`（14 字节；兼容没有末尾压力字节的 13 字节确认），仅在 required-hardware decoder 产生实际图像后发送；设置成功或创建 session 不能发确认。Mac 核对 generation / codec / 实际尺寸；实验配置 8 秒无确认或编码失败则用更高 videoGeneration 重建原档位，保留 A 输入连接。反馈确认不代表画质改善、稳定 FPS 或 Pencil 性能验收。iPad 每秒最多追加一次带压力位的反馈（待解码帧达到 2、丢帧计数增加、等待 IDR、接收至显示超过 80 ms 或有新到达但超过 200 ms 未显示），Mac 将其与发送完成耗时/队列压力共同用于既有降级迟滞；仍不扩大任何队列。日常模式目标上限 20 Mbps；旧自定义与内部实验仍可超过该预算，普通 UI 不提供高码率实验编辑器；仍受编码 API 整数范围、8 MiB 单帧和有界队列约束。
+`VIDEO_FEEDBACK = videoGeneration u32, width u32, height u32, codec u8, congested u8`（14 字节；兼容没有末尾压力字节的 13 字节确认），仅在 required-hardware decoder 产生实际图像后发送；设置成功或创建 session 不能发确认。Mac 核对 generation / codec / 实际尺寸；实验配置 8 秒无确认或编码失败则用更高 videoGeneration 重建原档位，保留 A 输入连接。反馈确认不代表画质改善、稳定 FPS 或 Pencil 性能验收。iPad 每秒最多追加一次带压力位的反馈（待解码帧达到 2、参考链恢复计数增加、等待 IDR、接收至显示超过 80 ms 或有新到达但超过 200 ms 未显示），正常 config/IDR 替换及迟到旧世代丢弃只计入诊断，不单独置压力位；Mac 将其与发送完成耗时/队列压力共同用于既有降级迟滞；仍不扩大任何队列。日常模式目标上限 20 Mbps；旧自定义与内部实验仍可超过该预算，普通 UI 不提供高码率实验编辑器；仍受编码 API 整数范围、8 MiB 单帧和有界队列约束。
 
 
 ## 5. 重连语义

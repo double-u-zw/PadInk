@@ -32,11 +32,16 @@ class ReleaseResourceTests(unittest.TestCase):
                 self.assertEqual(info[key], value)
             self.assertEqual(info['NSBonjourServices'], ['$(PADINK_BONJOUR_SERVICE_TYPE)'])
             self.assertNotIn('NSAllowsArbitraryLoads', info)
-            self.assertNotIn('ITSAppUsesNonExemptEncryption', info)
+            if platform == 'iPad':
+                self.assertIs(info['ITSAppUsesNonExemptEncryption'], False)
+                self.assertNotIn('UIBackgroundModes', info)
+            else:
+                self.assertNotIn('ITSAppUsesNonExemptEncryption', info)
             privacy = plistlib.loads((ROOT / f'Hosts/{platform}/PrivacyInfo.xcprivacy').read_bytes())
             reasons = {e['NSPrivacyAccessedAPIType']: set(e['NSPrivacyAccessedAPITypeReasons']) for e in privacy['NSPrivacyAccessedAPITypes']}
             self.assertEqual(reasons['NSPrivacyAccessedAPICategoryUserDefaults'], {'CA92.1'})
             self.assertEqual(reasons['NSPrivacyAccessedAPICategorySystemBootTime'], {'35F9.1','8FFB.1'})
+            self.assertEqual(reasons['NSPrivacyAccessedAPICategoryFileTimestamp'], {'C617.1'})
             self.assertFalse(privacy['NSPrivacyTracking'])
             self.assertEqual(privacy['NSPrivacyCollectedDataTypes'], [])
             self.assertIn(f'Hosts/{platform}/PrivacyInfo.xcprivacy', project)
@@ -51,7 +56,8 @@ class ReleaseResourceTests(unittest.TestCase):
                 self.assertEqual(png[:8], b'\x89PNG\r\n\x1a\n')
                 expected = round(float(item['size'].split('x')[0]) * int(item['scale'][:-1]))
                 self.assertEqual(struct.unpack('>II', png[16:24]), (expected, expected))
-                self.assertEqual(png[25], 2, 'RGB without alpha is required')
+                self.assertEqual(png[25], 6 if platform == 'Mac' else 2,
+                                 'Mac uses transparent corners; iPad requires opaque RGB')
             if platform == 'iPad':
                 self.assertTrue(any(e['idiom']=='ios-marketing' and e['size']=='1024x1024' for e in entries))
 

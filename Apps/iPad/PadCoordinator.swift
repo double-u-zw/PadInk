@@ -28,14 +28,14 @@ public final class PadCoordinator {
  private var keyframeExhaustionReported = false
  private var decodeRecoveryRebuilt = false
  private var decodedVideoConfig: VideoConfig?
- private var lastVideoFeedback: UInt64 = 0, lastFeedbackDrops: UInt64 = 0
+ private var lastVideoFeedback: UInt64 = 0, lastFeedbackRecoveries: UInt64 = 0
  private var pendingKeyframeContext: VideoDecodeContext?
  private var videoContext: VideoDecodeContext? // Input queue; changes on attachment or B replacement.
  private lazy var videoPump = VideoDecodePump(schedule: { [weak self] job in self?.media.async { job() } })
  public var videoQueueSnapshot: VideoDecodeQueueSnapshot { videoPump.snapshot }
  private var touchEnabled = UserDefaults.standard.object(forKey: "touchEnabled") as? Bool ?? true
  private lazy var input = PadInputLink(diagnostics: diagnostics)
- private let signingExpiry = ProvisioningProfile.embeddedExpiry()
+ private let signingExpiry = BuildIdentity.current.usesProvisioningExpiryReminder ? ProvisioningProfile.embeddedExpiry() : 0
  private var drawable = CGSize(width: 2732, height: 2048)
  private var paused = false
  private var presentationID: UUID? // Main-thread only; fences delayed decoder callbacks.
@@ -191,9 +191,9 @@ public final class PadCoordinator {
   let now = MonotonicClock.now
   if let config = decodedVideoConfig, let a = attachment, a.isReady,
      a.peer?.capabilities.contains(.extendedVideo) == true, now &- lastVideoFeedback >= 1_000_000_000 {
-   let pressure = video.pendingFrames >= 2 || video.droppedFrames > lastFeedbackDrops || video.waitingForIDR || renderer?.presentationPressure.congested(now: now) == true
+   let pressure = video.congested(sinceRecoveries: lastFeedbackRecoveries) || renderer?.presentationPressure.congested(now: now) == true
    _ = a.send(.videoFeedback, payload: VideoFeedback(config, congested: pressure).encode(), on: .video)
-   lastVideoFeedback = now; lastFeedbackDrops = video.droppedFrames
+   lastVideoFeedback = now; lastFeedbackRecoveries = video.recoveries
   }
   status.decodePendingFrames = video.pendingFrames; status.decodePendingBytes = video.pendingBytes; status.decodeInFlightBytes = video.inFlightBytes
   status.decodePeakPendingFrames = video.peakPendingFrames; status.decodePeakRetainedBytes = video.peakRetainedFrameBytes
@@ -280,7 +280,7 @@ public final class PadCoordinator {
  /// Input queue. Replacing B creates a new decode epoch without changing input ownership.
  @discardableResult private func startVideo(_ a: Attachment) -> VideoDecoder {
   let context = VideoDecodeContext(attachment: InputContext(a)), g = UInt64(a.generation)
-  decodedVideoConfig = nil; lastVideoFeedback = 0; lastFeedbackDrops = videoPump.snapshot.droppedFrames
+  decodedVideoConfig = nil; lastVideoFeedback = 0; lastFeedbackRecoveries = videoPump.snapshot.recoveries
   videoContext = context; pendingKeyframeContext = nil; keyframeRetry = VideoKeyframeRetry(); keyframeExhaustionReported = false; videoRecovery = nil
   if renderer != nil { videoState = "waitingForFrame"; videoWaitingSince = MonotonicClock.now }
   else { videoState = "failed"; videoWaitingSince = nil }

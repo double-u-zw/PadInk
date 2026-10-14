@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "status": "local-submission-draft-build12-uploaded-not-submitted",
+  "version": "0.3.0",
+  "build": "12",
+  "primaryLanguageProposal": "zh-Hans",
+  "interfaceLanguages": [
+    "zh-Hans"
+  ],
+  "primaryCategoryProposal": "PRODUCTIVITY",
+  "secondaryCategoryProposal": "UTILITIES",
+  "copyright": null,
+  "sku": "padink-ipad",
+  "teamID": null,
+  "bundleID": "com.padink.ipad",
+  "priceAndTerritories": null,
+  "ageRatingQuestionnaire": null,
+  "reviewContact": null,
+  "privateSupportContact": null,
+  "macSignedDownloadURL": null,
+  "reviewVideoURL": null,
+  "appPrivacyFinalAnswers": null,
+  "exportComplianceFinalAnswers": null,
+  "nameAvailabilityConfirmed": true,
+  "publicDocumentsUpdated": false,
+  "testFlightUSBValidated": false,
+  "approvedStoreScreenshots": [],
+  "urls": {
+    "privacyPolicy": "https://github.com/double-u-zw/PadInk/blob/main/docs/PRIVACY.md",
+    "support": null,
+    "macReleaseIndex": "https://github.com/double-u-zw/PadInk/releases",
+    "marketing": null,
+    "feedback": "https://github.com/double-u-zw/PadInk/issues"
+  },
+  "localizations": {
+    "zh-Hans": {
+      "name": "PadInk",
+      "subtitle": "通过 USB 镜像 Mac，书写与操作文稿",
+      "keywords": "手写板,数位板,绘图板,屏幕镜像,双指滚动,文稿批注,触控操作,数据线",
+      "promotionalText": "将自己的 Mac 主屏显示到 iPad，用 Apple Pencil 书写，用手指操作。需要单独安装 Mac 辅助端，并通过 USB 数据线连接。",
+      "description": "PadInk 将你自己的 Mac 主屏显示到 iPad，让 Apple Pencil 和手指操作 Mac 上当前打开的应用。\n\n• 在支持手写的 Mac 应用中选择笔工具，用 Apple Pencil 写字或绘图。\n• 用手指点击、拖动、选择工具，用双指滚动和缩放。缩放与笔输入效果取决于目标应用、当前工具与文稿焦点。\n• 使用 USB 数据线连接，在两端确认设备配对。文稿由 Mac 上的目标应用保存；PadInk 不提供独立的 iPad 笔记本。\n\n使用条件\n需要搭载 Apple Silicon（M 系列）且运行 macOS 14 或更新版本的 Mac、单独下载的 PadInk Mac 辅助端、iPadOS 17 或更新版本的 iPad，以及能传数据的 USB 线。手写需要兼容该 iPad 的 Apple Pencil。Mac 辅助端通过 GitHub Release 分发；首次运行需允许屏幕录制与辅助功能，部分应用缩放还可能需要自动化权限。相关目标应用需另行安装。\n\n当前界面为简体中文。画面和输入仅在确认配对的设备间实时传输；没有 PadInk 云端账户、广告或自动上传诊断。主动分享诊断由你决定。隐私与安装说明见支持页面。"
+    },
+    "en-US": {
+      "name": "PadInk",
+      "subtitle": "USB display, pen and touch",
+      "keywords": "drawing tablet,stylus,handwriting,screen mirror,touch,scroll,USB,annotation",
+      "promotionalText": "View your Mac display on iPad, write with Apple Pencil and use touch controls. Requires the separately installed Mac companion and a USB data cable.",
+      "description": "PadInk mirrors your own Mac's main display to iPad and sends Apple Pencil and touch input to the active Mac application.\n\n• Select a pen tool in a compatible Mac application, then write or draw with Apple Pencil.\n• Tap, drag and select tools with your fingers. Use two fingers to scroll or zoom. Zoom and pen behavior depend on the target application, selected tool and document focus.\n• Connect using a USB data cable and confirm pairing on both devices. The Mac application saves your document. PadInk does not provide a standalone iPad notebook.\n\nRequirements\nAn Apple Silicon (M-series) Mac running macOS 14 or later, the separately downloaded PadInk Mac companion, an iPad running iPadOS 17 or later, and a USB data cable. Handwriting requires an Apple Pencil compatible with your iPad. The Mac companion is distributed through GitHub Release. It requires Screen Recording and Accessibility permission; zoom in some applications may also require Automation permission. Target applications must be installed separately.\n\nThe current app interface is in Simplified Chinese. Display frames and input are processed in real time between paired devices. There is no PadInk cloud account, advertising or automatic diagnostic upload. You choose whether to share diagnostics. See the support page for privacy and installation information."
+    }
+  },
+  "sources": {
+    "fieldLimits": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/",
+    "versionFields": "https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information/",
+    "screenshots": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/"
+  },
+  "publicSupportContact": null,
+  "reviewNotesFiles": {
+    "zh-Hans": "review-zh.txt",
+    "en-US": "review-en.txt"
+  },
+  "betaTestInformation": {
+    "zh-Hans": "使用公证 Mac 辅助端与 USB 数据线，测试首次配对、镜像、Pencil 书写、手指操作、双指滚动、应用支持的缩放、保存重开与拔插恢复。保持 VPN 开启；反馈附双端 build、环境和步骤，勿提交私人文稿。",
+    "en-US": "Use the notarized Mac companion and a USB data cable. Test first pairing, mirroring, Pencil handwriting, touch, two-finger scrolling, application-supported zoom, saving/reopening and USB reconnect. Keep VPN enabled. Include both builds, environment and steps in feedback, without private documents."
+  },
+  "materialRole": "current-candidate",
+  "target": {
+    "variant": "release",
+    "channel": "rc",
+    "ipadDistribution": "testflight-app-store",
+    "macDistribution": "developer-id-notarized"
+  },
+  "macArchitectures": [
+    "arm64"
+  ],
+  "appStoreConnectID": "6822596251",
+  "appRecordStatus": "created",
+  "testFlightBuildStatus": "owner-confirmed-installed-build12; initial-use-no-problems; detailed-checklist-not-confirmed",
+  "macLocalNotarizationStatus": "accepted-and-stapled",
+  "ownerInitialUseConfirmed": true,
+  "appStoreReleaseMode": "MANUAL",
+  "reviewVideoRequired": false,
+  "reviewVideoRecommended": true,
+  "submissionProposals": {
+    "status": "owner-approved-preparation-basis; final declarations and regional activation remain pending",
+    "copyright": "2026 <本人开发者署名，保存前核对账户持有人姓名>",
+    "categories": {
+      "primary": "PRODUCTIVITY",
+      "secondary": "UTILITIES"
+    },
+    "releaseMode": "manual release after approval; no submission or public release authorized",
+    "pricingAndTerritories": {
+      "price": "free",
+      "priceOwnerConfirmed": true,
+      "territoryIntent": [
+        "China mainland only"
+      ],
+      "actualStorefrontsSelected": false,
+      "regionalPrerequisites": {
+        "chinaMainland": {
+          "status": "Confirm ICP applicability/filing details; do not assume exemption based on USB/local-network use, invent a number or mark this complete",
+          "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-information"
+        }
+      },
+      "europeanUnion": "outside release scope; no EU storefront or trader-contact publication planned"
+    },
+    "appPrivacy": {
+      "tracking": false,
+      "coreAppCollection": "No developer/server collection from screen or input; processed in real time on user-owned paired devices",
+      "thirdPartySDKs": "None; SwiftPM has no external package dependency",
+      "localOnly": "preferences, device-only Keychain pairing, bounded diagnostics",
+      "supportFeedback": "Optional export/share; do not assume optional-disclosure exemption. If developer receives/retains diagnostic files without satisfying all Apple criteria, disclose Diagnostics and Customer Support as applicable. Confirm actual support workflow before finalizing.",
+      "suggestedAnswer": "Disclose optional Customer Support and Diagnostics for support/troubleshooting; not tracking or advertising. Do not select Data Not Collected merely because sending is voluntary.",
+      "source": "https://developer.apple.com/app-store/app-privacy-details/",
+      "suggestedDataTypes": [
+        "Customer Support",
+        "Diagnostics actually received (crash/performance/other diagnostic reports as applicable)",
+        "Name/email/account identifiers when actually received with a support request"
+      ],
+      "suggestedPurpose": "App Functionality: customer support and troubleshooting",
+      "linkedToUser": "Treat support submissions as linked when name/email/GitHub account can be associated with the feedback; do not assume de-identification",
+      "automaticUpload": false,
+      "ownerApprovedToPrepare": true,
+      "finalSupportWorkflowNeedsConfirmation": true
+    },
+    "encryption": {
+      "usesCryptography": true,
+      "appleFrameworks": [
+        "CryptoKit (Curve25519, HKDF, HMAC-SHA256)",
+        "Network.framework/Security (TLS 1.2 PSK AES-128-GCM)",
+        "Keychain"
+      ],
+      "thirdPartyOrProprietaryCryptoImplementation": false,
+      "binaryITSAppUsesNonExemptEncryption": false,
+      "suggestedAnswer": "Apple operating-system cryptography only; no non-exempt encryption declaration based on reviewed implementation",
+      "ownerFinalConfirmationRequired": true,
+      "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/",
+      "ownerApprovedToPrepare": true
+    },
+    "ageRating": {
+      "providedContentFrequency": "None for violence, sexual content, profanity, horror, substances, medical advice, gambling/contests; no supplied content catalog",
+      "parentalControls": false,
+      "ageAssurance": false,
+      "broadlyDistributedUGC": false,
+      "inAppMessaging": false,
+      "advertising": false,
+      "unrestrictedWebAccess": true,
+      "kidsCategory": false,
+      "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/",
+      "unrestrictedWebAccessRationale": "Conservative interpretation: the generic Mac mirror can operate the user’s Mac browser, despite having no embedded browser in the iPad app. This is a proposed answer, not an Apple ruling.",
+      "ownerApprovedToPrepare": true,
+      "finalRating": "Apple calculates from final questionnaire; do not claim 4+"
+    },
+    "accessibility": "No evaluated accessibility support claims; answer only after testing the relevant criterion",
+    "appOnAppleSiliconMacAndVisionPro": "iPad companion is for physical iPad/Pencil use; recommend excluding iPad-app availability on Mac/Vision Pro for first App Store release; no account settings changed",
+    "standardEULA": "Use Apple standard EULA unless owner supplies another; no new agreement accepted"
+  },
+  "preparedMacAsset": {
+    "fileName": "PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip",
+    "sha256": "374eb9570c572efdc222d97413366cdce81389da356f67f02e7e25acaf376521",
+    "distribution": "local only; no download URL invented",
+    "architectures": [
+      "arm64"
+    ]
+  },
+  "ownerActionFields": [
+    "public support email (owner will supply later)",
+    "private review contact name/email/international phone in App Store Connect",
+    "verify personal copyright display name against account holder",
+    "China mainland ICP applicability/filing details",
+    "final privacy/encryption/age-rating declaration confirmation",
+    "real-function screenshots and signed-channel test evidence"
+  ],
+  "appStoreConnectDraftPreparation": {
+    "status": "saved-private-draft-not-submitted",
+    "version": "0.3.0",
+    "selectedBuild": "12",
+    "localizationsSaved": [
+      "zh-Hans",
+      "en-US"
+    ],
+    "savedFields": [
+      "name",
+      "subtitle",
+      "description",
+      "promotionalText",
+      "keywords",
+      "primaryCategory",
+      "secondaryCategory"
+    ],
+    "categories": {
+      "primary": "PRODUCTIVITY",
+      "secondary": "UTILITIES"
+    },
+    "reviewNotesSaved": false,
+    "reviewNotesBlockedBy": "Apple requires review contact first/last name, email and phone before notes can be saved; local notes retained",
+    "reviewContactProvided": false,
+    "releaseMode": "MANUAL",
+    "AppStoreReviewSubmitted": false,
+    "publiclyReleased": false
+  },
+  "submissionAssetDirectory": "build/signing/0.3.0-b12/submission-assets",
+  "ownerDecisions": {
+    "confirmedAtLocalDate": "2026-10-14",
+    "copyrightHolder": "account holder personally",
+    "copyrightDisplayName": "verify against developer-account holder name before saving final text",
+    "firstReleasePrice": {
+      "kind": "free",
+      "amount": 0,
+      "ownerConfirmed": true
+    },
+    "territoryIntent": {
+      "includeChinaMainland": true,
+      "includeOverseas": false,
+      "status": "owner changed scope to China mainland only; local preparation, no actual availability change",
+      "actualAvailabilityChanged": false
+    },
+    "publicSupportEmail": "owner will supply later; do not substitute Apple login email",
+    "questionnaires": "prepare using assistant recommendations; final declarations not submitted",
+    "AppStoreReviewSubmissionAuthorized": false,
+    "publicPublicationAuthorized": false
+  }
+}

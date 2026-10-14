@@ -35,14 +35,21 @@ class FakeAppleTools:
     def __call__(self, arguments):
         args = [str(argument) for argument in arguments]
         self.calls.append(args)
+        if args == ["xcodebuild", "-version"]: return b"Xcode 27.0\nBuild version fixture", b""
+        if args == ["xcrun", "--sdk", "iphoneos", "--show-sdk-version"]: return b"27.0\n", b""
+        if args[:4] == ["codesign", "-d", "--entitlements", ":-"]:
+            info = plistlib.loads((Path(args[-1]) / "Info.plist").read_bytes())
+            return plistlib.dumps({"get-task-allow": False, "application-identifier": TEAM + "." + info["CFBundleIdentifier"], "com.apple.developer.team-identifier": TEAM}), b""
         if args[:4] == ["security", "find-identity", "-v", "-p"]:
             text = "" if self.no_credentials else f'1) hash "Developer ID Application: Test Team ({TEAM})"\n2) hash "Apple Distribution: Test Team ({TEAM})"'
             return text.encode(), b""
         if args[:3] == ["security", "cms", "-D"]:
             app = Path(args[-1]).parent
             info = plistlib.loads((app / "Info.plist").read_bytes())
-            return plistlib.dumps({"ExpirationDate": datetime.datetime(2035, 1, 1), "Entitlements": {"get-task-allow": False, "application-identifier": TEAM + "." + info["CFBundleIdentifier"]}}), b""
+            return plistlib.dumps({"ExpirationDate": datetime.datetime(2035, 1, 1), "Entitlements": {"get-task-allow": False, "application-identifier": TEAM + "." + info["CFBundleIdentifier"], "com.apple.developer.team-identifier": TEAM}}), b""
         if args[:3] == ["xcrun", "notarytool", "submit"]:
+            return json.dumps({"id": "fixture-submission", "status": "Invalid" if self.reject_notary else "Accepted"}).encode(), b""
+        if args[:3] == ["xcrun", "notarytool", "info"]:
             return json.dumps({"id": "fixture-submission", "status": "Invalid" if self.reject_notary else "Accepted"}).encode(), b""
         if args[:3] == ["xcrun", "dwarfdump", "--uuid"]:
             path = args[-1]
@@ -132,7 +139,108 @@ class ReleaseFixture(unittest.TestCase):
         return subprocess.check_output(["git", "-C", str(self.root), *args], stderr=subprocess.PIPE).decode()
 
     def prepare(self, preview=False, notes=None):
-        return module.prepare(self.root, self.output, preview=preview, notes=notes)
+        return module.prepare(self.root, self.output, preview=preview, notes=notes, mac_architectures=sorted(module.MAC_ARCHITECTURES))
+
+    def test_new_candidates_default_to_apple_silicon_only(self):
+        module.prepare(self.root, self.output)
+        run = FakeAppleTools()
+        module.build_platform(self.root, self.output, "mac", run, sign_only=True)
+        manifest, _ = module.check(self.root, self.output)
+        self.assertEqual(manifest["release"]["macArchitectures"], ["arm64"])
+        self.assertEqual([a["architecture"] for a in manifest["assets"] if a["role"] == "maintainer-mac-notary-candidate"], ["arm64"])
+        with self.assertRaises(module.ReleaseError):
+            module.build_platform(self.root, self.output, "mac", run, "x86_64", sign_only=True)
+
+    def test_narrow_scope_preserves_bytes_and_blocks_historical_intel_submission(self):
+        self.prepare()
+        run = FakeAppleTools()
+        module.build_platform(self.root, self.output, "mac", run, sign_only=True)
+        before, _ = module.check(self.root, self.output)
+        digests = {a["path"]: a["sha256"] for a in before["assets"]}
+        module.narrow_mac_scope(self.root, self.output, ["arm64"])
+        after, _ = module.check(self.root, self.output)
+        self.assertEqual(before["source"], after["source"])
+        self.assertEqual(digests, {a["path"]: a["sha256"] for a in after["assets"]})
+        intel = next(a for a in after["assets"] if a.get("architecture") == "x86_64")
+        self.assertTrue(intel["excludedFromCurrentScope"])
+        calls = len(run.calls)
+        with self.assertRaises(module.ReleaseError): module.notarize_platform(self.root, self.output, "x86_64", run)
+        self.assertEqual(calls, len(run.calls))
+        with self.assertRaises(module.ReleaseError): module.narrow_mac_scope(self.root, self.output, ["arm64", "x86_64"])
+
+    def test_arm_only_complete_assets_and_public_stage_do_not_require_intel(self):
+        notes = self.root / 'build/notes.md'
+        notes.parent.mkdir(exist_ok=True); notes.write_text('# Apple Silicon candidate\n')
+        module.prepare(self.root, self.output, notes=notes)
+        run = FakeAppleTools()
+        module.build_platform(self.root, self.output, "mac", run)
+        module.build_platform(self.root, self.output, "ipad", run)
+        module.check(self.root, self.output, require_assets=True, verify_platform=True, runner=run)
+        public = self.root / 'build/public'
+        module.public_assets(self.root, self.output, public, runner=run)
+        result = module.check_public(self.root, public, verify_platform=True, runner=run)
+        self.assertEqual([a["architecture"] for a in result["assets"] if a["role"] == "end-user-mac"], ["arm64"])
+
+    def test_later_docs_have_separate_provenance_and_cannot_hide_changed_app_inputs(self):
+        run = self.both_platforms()
+        guide = self.root / 'docs/使用者安装指南.md'
+        guide.write_text('# Current installation guide\n')
+        public = self.root / 'build/current-docs'
+        module.public_assets(self.root, self.output, public, runner=run, documents_root=self.root)
+        result = module.check_public(self.root, public)
+        self.assertTrue(result['documentationSource']['dirty'])
+        self.assertFalse(result['source']['dirty'])
+        self.assertEqual((public / 'docs/使用者安装指南.md').read_text(), guide.read_text())
+        (self.root / 'Sources/test.swift').write_text('let changed = true\n')
+        with self.assertRaises(module.ReleaseError):
+            module.public_assets(self.root, self.output, self.root / 'build/incorrect-docs', runner=run, documents_root=self.root)
+
+    def test_pending_notary_can_resume_without_resubmitting_and_cannot_stage(self):
+        self.prepare()
+        tools = FakeAppleTools()
+        module.build_platform(self.root, self.output, 'mac', tools, 'arm64', sign_only=True)
+        def pending(args):
+            if list(map(str, args))[:3] == ['xcrun', 'notarytool', 'info']:
+                return json.dumps({'id': 'fixture-submission', 'status': 'In Progress'}).encode(), b''
+            return tools(args)
+        self.assertIsNone(module.notarize_platform(self.root, self.output, 'arm64', pending))
+        manifest, _ = module.check(self.root, self.output)
+        self.assertEqual(manifest['distribution']['mac'], 'Developer-ID-signed-notarization-in-progress')
+        with self.assertRaises(module.ReleaseError): module.public_assets(self.root, self.output, self.root / 'build/pending-public', runner=tools)
+        result = module.notarize_platform(self.root, self.output, 'arm64', tools, resume=True)
+        self.assertTrue(result.is_file())
+        self.assertEqual(len([c for c in tools.calls if c[:3] == ['xcrun', 'notarytool', 'submit']]), 1)
+
+    def test_resume_requires_exact_signed_asset_receipt_before_apple_query(self):
+        self.prepare()
+        tools = FakeAppleTools()
+        module.build_platform(self.root, self.output, 'mac', tools, 'arm64', sign_only=True)
+        with self.assertRaises(module.ReleaseError): module.notarize_platform(self.root, self.output, 'arm64', tools, resume=True)
+        work = self.root / 'build/rc-private-work' / (self.output.name + '-notarize-arm64')
+        work.mkdir(parents=True)
+        (work / 'SUBMISSION.json').write_text(json.dumps({'id': 'fixture-submission', 'assetSHA256': 'bad', 'assetPath': 'bad', 'source': {}}))
+        with self.assertRaises(module.ReleaseError): module.notarize_platform(self.root, self.output, 'arm64', tools, resume=True)
+        self.assertFalse(any(c[:3] == ['xcrun', 'notarytool', 'info'] for c in tools.calls))
+
+    def test_actual_upload_receipt_binds_exact_delivered_ipa_and_keeps_pre_export_historical(self):
+        self.both_platforms()
+        manifest, _ = module.check(self.root, self.output)
+        before = next(a for a in manifest['assets'] if a['role'] == 'maintainer-testflight-upload-candidate')
+        delivered = dict(before, path='delivered.ipa', uploaded=True, uploadRequired=False)
+        shutil.copy2(self.output / before['path'], self.output / delivered['path'])
+        before['role'] = 'maintainer-testflight-pre-upload-export'
+        before['uploadRequired'] = False
+        before['supersededForUploadBy'] = delivered['path']
+        manifest['assets'].append(delivered)
+        manifest['appStoreConnect'] = {'actualUploadedIPASHA256': delivered['sha256'], 'actualUploadedIPAPath': delivered['path'], 'source': manifest['source'], 'uploadedVersion': '0.3.0', 'uploadedBuild': '1', 'AppStoreReviewSubmitted': False, 'publiclyReleased': False}
+        module.write_manifest(self.output, manifest)
+        module.check(self.root, self.output, require_assets=True)
+        for change in [{'actualUploadedIPASHA256': 'f' * 64}, {'uploadedBuild': '999'}, {'AppStoreReviewSubmitted': True}]:
+            with self.subTest(change=change):
+                original = manifest['appStoreConnect'].copy()
+                manifest['appStoreConnect'].update(change); module.write_manifest(self.output, manifest)
+                with self.assertRaises(module.ReleaseError): module.check(self.root, self.output)
+                manifest['appStoreConnect'] = original
 
     def both_platforms(self, notes_text="# 本次候选\n\n[Guide](docs/使用者安装指南.md)\n"):
         notes = self.root / "build/notes.md"
@@ -245,6 +353,53 @@ class ReleaseFixture(unittest.TestCase):
         with self.assertRaises(module.ReleaseError): module.build_platform(self.root, self.output, "mac", run)
         self.assertEqual(len(run.calls), 1)
         self.assertFalse(any(asset["role"] == "end-user-mac" for asset in module.check(self.root, self.output)[0]["assets"]))
+
+    def test_sign_only_never_contacts_notary_or_becomes_a_public_asset(self):
+        self.prepare()
+        config = self.root / "Config/Release.local.xcconfig"
+        config.write_text(CONFIG.replace("PADINK_NOTARY_PROFILE = test-notary-profile\n", ""))
+        run = FakeAppleTools()
+        module.build_platform(self.root, self.output, "mac", run, architecture="arm64", sign_only=True)
+        manifest, _ = module.check(self.root, self.output, verify_platform=True, runner=run)
+        pending = next(a for a in manifest["assets"] if a["role"] == "maintainer-mac-notary-candidate")
+        self.assertEqual(pending["notarization"], "pending")
+        self.assertFalse(pending["ordinaryUserInstaller"])
+        self.assertFalse(any("notarytool" in call or "stapler" in call or call[0] == "spctl" for call in run.calls))
+        with self.assertRaises(module.ReleaseError): module.check(self.root, self.output, require_assets=True)
+        with self.assertRaises(module.ReleaseError): module.public_assets(self.root, self.output, self.root / "build/public", runner=run)
+
+    def test_notarize_reuses_signed_bytes_and_original_symbols_without_archive(self):
+        self.prepare()
+        run = FakeAppleTools()
+        module.build_platform(self.root, self.output, "mac", run, architecture="arm64", sign_only=True)
+        before, _ = module.check(self.root, self.output)
+        pending = next(a for a in before["assets"] if a["role"] == "maintainer-mac-notary-candidate")
+        digest = module.file_sha(self.output / pending["path"])
+        run.calls.clear()
+        path = module.notarize_platform(self.root, self.output, "arm64", run)
+        after, _ = module.check(self.root, self.output)
+        public = next(a for a in after["assets"] if a["role"] == "end-user-mac")
+        self.assertEqual(public["debugSymbols"], pending["debugSymbols"])
+        self.assertEqual(module.file_sha(self.output / pending["path"]), digest)
+        submit = next(c for c in run.calls if c[:3] == ["xcrun", "notarytool", "submit"])
+        self.assertEqual(Path(submit[3]).resolve(), (self.output / pending["path"]).resolve())
+        self.assertFalse(any(c[0] == "xcodebuild" and "archive" in c for c in run.calls))
+        self.assertTrue(path.exists())
+        with self.assertRaises(module.ReleaseError): module.notarize_platform(self.root, self.output, "arm64", run)
+
+    def test_notary_rejection_preserves_private_signed_asset_without_public_claim(self):
+        self.prepare()
+        module.build_platform(self.root, self.output, "mac", FakeAppleTools(), architecture="arm64", sign_only=True)
+        with self.assertRaises(module.ReleaseError): module.notarize_platform(self.root, self.output, "arm64", FakeAppleTools(reject_notary=True))
+        manifest, _ = module.check(self.root, self.output)
+        self.assertFalse(any(a["role"] == "end-user-mac" for a in manifest["assets"]))
+        self.assertEqual(manifest["distribution"]["mac"], "Developer-ID-signed-notarization-rejected")
+
+    def test_preview_cannot_sign_only_and_frozen_changes_block_notary(self):
+        self.prepare(preview=True)
+        run = FakeAppleTools()
+        with self.assertRaises(module.ReleaseError): module.build_platform(self.root, self.output, "mac", run, architecture="arm64", sign_only=True)
+        self.assertEqual(run.calls, [])
 
     def test_mac_and_ipad_commands_preserve_identity_symbols_and_export_only(self):
         run = self.both_platforms()

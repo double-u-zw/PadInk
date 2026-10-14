@@ -13,7 +13,7 @@ public final class PointerInjectionBackend {
  private var location = CGPoint.zero, clickCount: Int64 = 1, scrolling = false
  private var residualX = 0.0, residualY = 0.0
  public init(postEvent: @escaping (CGEvent) -> Void = { $0.post(tap: .cghidEventTap) }) { post = postEvent }
- public func deliver(_ event: TouchEvent) throws {
+ public func deliver(_ event: TouchEvent, targetFamily: ApplicationFamily = .generic) throws {
   if event.phase == .cancelled { reset(); if event.kind == .magnify { try magnify(event) }; return }
   let point = VideoGeometry.macPoint(normalized: CGPoint(x: Double(event.x), y: Double(event.y)), captureBounds: displayBounds)
   switch event.kind {
@@ -30,7 +30,10 @@ public final class PointerInjectionBackend {
    // A trackpad scroll targets the pointer's original location; finger travel
    // changes the delta, not the receiving view under the pointer.
    let anchor = event.phase == .began ? point : location
-   try scroll(dx: -Double(event.dx) * displayBounds.width, dy: -Double(event.dy) * displayBounds.height, phase: phase, point: anchor)
+   // Goodnotes interprets horizontal wheel motion in the opposite direction to the
+   // default path. Use the admitted gesture's target, preserving vertical scrolling.
+   let horizontalSign = targetFamily == .goodnotes ? 1.0 : -1.0
+   try scroll(dx: horizontalSign * Double(event.dx) * displayBounds.width, dy: -Double(event.dy) * displayBounds.height, phase: phase, point: anchor)
    scrolling = event.phase == .began || event.phase == .changed; location = anchor
   case .magnify: try magnify(event)
   }
@@ -148,7 +151,7 @@ public final class TouchInputPipeline {
      zoom?.invalidate(input: inputContext)
      contactContext = ZoomActionContext(input: inputContext, gestureID: event.gestureID, geometryGeneration: event.geometryGeneration, targetRevision: receptionRevision, target: receptionTarget)
     }
-    do { try backend.deliver(event); ownership.delivered(event)
+    do { try backend.deliver(event, targetFamily: contactContext?.target?.family ?? .generic); ownership.delivered(event)
      if event.phase == .ended || event.phase == .cancelled { contactContext = nil }
      diagnostics.mark("touch.inject", session: UInt64(generation), item: event.gestureID, sequence: UInt64(event.sequence), state: String(describing: event.kind) + ":" + String(describing: event.phase), value: Double(event.dx)) }
     catch { if let contactContext { zoom?.cancel(context: contactContext) }; backend.reset(); execute(ownership.cancel(.protocolViolation)) }

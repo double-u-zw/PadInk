@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,6 +20,30 @@ PADINK_NOTARY_PROFILE = local-profile-name
 
 
 class ReleaseConfigTests(unittest.TestCase):
+    def test_distribution_entitlements_cannot_hide_debug_or_extra_capabilities(self):
+        team, bundle = "ABC1234567", "com.example.padink.ipad"
+        actual = {"application-identifier": team + "." + bundle, "com.apple.developer.team-identifier": team,
+                  "get-task-allow": False, "keychain-access-groups": [team + "." + bundle], "beta-reports-active": True}
+        profile = copy.deepcopy(actual)
+        profile['keychain-access-groups'] = [team + '.*']
+        module.verify_ipad_entitlements(actual, profile, bundle, team)
+        for key, value in [('get-task-allow', True), ('com.apple.developer.team-identifier', 'OTHERTEAM1'),
+                           ('keychain-access-groups', [team + '.other']), ('com.apple.private.usb', True), ('beta-reports-active', False)]:
+            with self.subTest(key=key), self.assertRaises(module.ReleaseError):
+                module.verify_ipad_entitlements(dict(actual, **{key:value}), profile, bundle, team)
+
+    def test_old_xcode_or_sdk_fails_before_archive(self):
+        self.path.write_text(VALID)
+        for version, sdk in [('25.0', '27.0'), ('27.0', '25.0')]:
+            calls = []
+            def run(args):
+                calls.append(args)
+                if args[0] == 'security': return b'"Apple Distribution: Test (ABC1234567)"', b''
+                if args[0] == 'xcodebuild': return ('Xcode ' + version).encode(), b''
+                return sdk.encode(), b''
+            with self.assertRaises(module.ReleaseError): module.preflight(module.paid_config(self.root, 'ipad'), 'ipad', run)
+            self.assertFalse(any('archive' in args for args in calls))
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)

@@ -29,7 +29,19 @@ final class BackendTests: XCTestCase {
   XCTAssertEqual(events[3].location.x, 1000, accuracy: 0.01)
   XCTAssertEqual(events[3].getDoubleValueField(.tabletEventPointPressure), 0)
   XCTAssertEqual(events[3].getIntegerValueField(.tabletEventPointButtons), 0)
+  XCTAssertEqual(events[3].getIntegerValueField(.tabletEventPointZ), 0x50490003)
+  XCTAssertEqual(events[1].getDoubleValueField(.tabletEventTiltX), sample(1,.begin).tilt.0, accuracy: 0.0001)
+  XCTAssertEqual(events[1].getDoubleValueField(.tabletEventTiltY), sample(1,.begin).tilt.1, accuracy: 0.0001)
   XCTAssertEqual(events[4].getIntegerValueField(.tabletProximityEventEnterProximity), 0)
+ }
+ func testTerminalBridgeDistinguishesCancelAndResetFromLift() throws {
+  for reset in [false,true] {
+   var events=[CGEvent]();let backend=PencilInjectionBackend(diagnostics:Diagnostics(),postEvent:{events.append($0)})
+   backend.reset(session:7);try backend.begin([sample(1,.begin)],session:7)
+   if reset {backend.reset()} else{try backend.cancel([sample(2,.cancel)],session:7)}
+   let up=events.first{$0.type == .leftMouseUp}!
+   XCTAssertEqual(up.getIntegerValueField(.tabletEventPointZ),0x50490004)
+  }
  }
  func testProximityIsAnchoredToActualContactNotAmbientMouseCursor() throws {
   var events = [CGEvent](); let b = PencilInjectionBackend(diagnostics: Diagnostics(), postEvent: { events.append($0) })

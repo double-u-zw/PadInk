@@ -9,6 +9,59 @@ private final class VideoPumpScheduler {
 private final class VideoConsumerProbe { var reset = 0 }
 
 final class VideoDecodePumpTests: XCTestCase {
+ func testRegularKeyframesDoNotTriggerCongestionAndLowerFrameRate() {
+  let scheduler = VideoPumpScheduler(), c = context()
+  var now: UInt64 = 1, lastRecoveries: UInt64 = 0, requests = 0
+  var adaptation = VideoAdaptation()
+  let pump = VideoDecodePump(clock: { now }, schedule: scheduler.enqueue)
+  pump.activate(c, consume: { _, _, _ in }, reset: {}, recovery: { requests += 1 })
+  pump.push(config(), context: c, received: now)
+  pump.push(frame(1, key: true), context: c, received: now); scheduler.run()
+  for second in 0..<5 {
+   now = UInt64(second) * 1_000_000_000 + 1
+   // Only one picture waits. A regular independent IDR arrives in the same USB burst,
+   // replacing that pending P frame before the media worker drains it. This is not overload.
+   pump.push(frame(UInt64(second * 2 + 2)), context: c, received: now)
+   pump.push(frame(UInt64(second * 2 + 3), key: true), context: c, received: now)
+   scheduler.run()
+   let snapshot = pump.snapshot
+   XCTAssertEqual(snapshot.pendingFrames, 0); XCTAssertFalse(snapshot.waitingForIDR)
+   _ = adaptation.update(congested: snapshot.congested(sinceRecoveries: lastRecoveries), now: now)
+   lastRecoveries = snapshot.recoveries
+  }
+  XCTAssertEqual(pump.snapshot.droppedFrames, 5, "keep normal replacement counts for diagnostics")
+  XCTAssertEqual(requests, 0); XCTAssertEqual(pump.snapshot.recoveries, 0)
+  XCTAssertEqual(adaptation.profile, VideoProfile(), "normal IDR replacement must not lower USB video to 30 FPS")
+ }
+ func testDecodeOverloadReportsPressureEvenAfterFreshKeyframeRecovers() {
+  let scheduler = VideoPumpScheduler(), c = context()
+  let pump = VideoDecodePump(clock: { 1 }, schedule: scheduler.enqueue)
+  pump.activate(c, consume: { _, _, _ in }, reset: {}, recovery: {})
+  pump.push(config(), context: c, received: 1)
+  pump.push(frame(1, key: true), context: c, received: 1); scheduler.run()
+  pump.push(frame(2), context: c, received: 1)
+  pump.push(frame(3), context: c, received: 1)
+  XCTAssertTrue(pump.snapshot.congested(sinceRecoveries: 0), "two queued frames still count as pressure")
+  XCTAssertFalse(pump.push(frame(4), context: c, received: 1))
+  XCTAssertTrue(pump.snapshot.waitingForIDR)
+  XCTAssertTrue(pump.snapshot.congested(sinceRecoveries: pump.snapshot.recoveries))
+  pump.push(frame(5, key: true), context: c, received: 1); scheduler.run()
+  XCTAssertFalse(pump.snapshot.waitingForIDR); XCTAssertEqual(pump.snapshot.pendingFrames, 0)
+  XCTAssertTrue(pump.snapshot.congested(sinceRecoveries: 0), "real overload must reach the next feedback")
+  XCTAssertFalse(pump.snapshot.congested(sinceRecoveries: pump.snapshot.recoveries), "acknowledged recovery must not keep reporting pressure")
+ }
+ func testDiscardedOldGenerationDoesNotDegradeHealthyNewVideo() {
+  let scheduler = VideoPumpScheduler(), c = context()
+  let pump = VideoDecodePump(clock: { 1 }, schedule: scheduler.enqueue)
+  pump.activate(c, consume: { _, _, _ in }, reset: {}, recovery: {})
+  pump.push(config(), context: c, received: 1)
+  pump.push(frame(1, key: true), context: c, received: 1); scheduler.run()
+  pump.push(config(g: 2), context: c, received: 1)
+  pump.push(frame(10, key: true, g: 2), context: c, received: 1); scheduler.run()
+  XCTAssertFalse(pump.push(frame(2, g: 1), context: c, received: 1))
+  XCTAssertGreaterThan(pump.snapshot.droppedFrames, 0); XCTAssertEqual(pump.snapshot.recoveries, 0)
+  XCTAssertFalse(pump.snapshot.congested(sinceRecoveries: 0))
+ }
  private func context(_ identity: UUID = UUID(), epoch: UUID = UUID()) -> VideoDecodeContext {
   VideoDecodeContext(attachment: InputContext(attachmentID: identity, generation: 1), epoch: epoch)
  }

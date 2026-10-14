@@ -1,0 +1,106 @@
+{
+  "checkedOn": "2026-10-14",
+  "requiredDeviceClass": "iPad 13 inch",
+  "requiredLandscapeSizes": [
+    [
+      2752,
+      2064
+    ],
+    [
+      2732,
+      2048
+    ]
+  ],
+  "formats": [
+    "png",
+    "jpg",
+    "jpeg"
+  ],
+  "minimumPerDeviceSize": 1,
+  "maximumPerDeviceSize": 10,
+  "icon": {
+    "path": "Hosts/iPad/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+    "sha256": "c49c5ce9f92c0a89c89fd37874265ab085cbaeae70f54c2a256f2b944da16337",
+    "size": [
+      1024,
+      1024
+    ],
+    "use": "reuse-original-iPad-icon-in-binary-no-redesign"
+  },
+  "existingReferences": [
+    {
+      "path": "build/app-store/simulator/final-launch.png",
+      "sha256": "d43a4ae8f4b86394be744f7281b723b07fad7f89330735998742a5e4707b4056",
+      "size": [
+        2064,
+        2752
+      ],
+      "storeReady": false,
+      "reason": "Real simulator waiting screen only; landscape UI sideways in portrait raster; does not demonstrate real Mac mirroring or handwriting. Keep as engineering reference only."
+    },
+    {
+      "path": "build/app-store/simulator/adhoc-launch.png",
+      "sha256": "d43a4ae8f4b86394be744f7281b723b07fad7f89330735998742a5e4707b4056",
+      "size": [
+        2064,
+        2752
+      ],
+      "storeReady": false,
+      "reason": "Byte-identical duplicate of final-launch; do not copy twice."
+    },
+    {
+      "path": "build/app-store/simulator/launch.png",
+      "sha256": "a287abf405565aaa8dc72e2d6e7a4d24678508e7a4ab68783cf96703081e2c06",
+      "size": [
+        2064,
+        2752
+      ],
+      "storeReady": false,
+      "reason": "Unsigned simulator Keychain identity error; exclude from store and reviewer materials."
+    }
+  ],
+  "needed": [
+    "real-handwriting-in-Mac-document",
+    "real-touch-scroll-or-zoom",
+    "real-USB-connection-or-help"
+  ],
+  "realStoreScreenshotCount": 0,
+  "reviewVideoAvailable": false,
+  "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/",
+  "candidateVersion": "0.3.0",
+  "candidateBuild": "12",
+  "ownerCaptureDevice": {
+    "model": "iPad Air 5 (existing device)",
+    "nativeLandscapeSize": [
+      2360,
+      1640
+    ],
+    "required13InchOriginal": false
+  },
+  "capturePlan": [
+    {
+      "id": "01-writing",
+      "zhTitle": "在 Mac 文稿上书写",
+      "enTitle": "Write in your Mac document",
+      "capture": "Real build12 mirror, a test document, actual Pencil marks; no private document or notification"
+    },
+    {
+      "id": "02-navigation",
+      "zhTitle": "双指操作文稿",
+      "enTitle": "Navigate with two fingers",
+      "capture": "Same real document after a verified scroll or zoom; a still image does not prove the gesture"
+    },
+    {
+      "id": "03-usb",
+      "zhTitle": "USB 连接你的 Mac",
+      "enTitle": "Connect to your Mac by USB",
+      "capture": "Real USB state plus visible PadInk UI; companion requirement explained"
+    }
+  ],
+  "thirteenInchPlan": "Use a real-function 13-inch simulator capture from the same frozen source if supported, or a clearly composed store canvas containing the unmodified native screenshot at its correct aspect ratio. Canvas is marketing artwork, never claim a different physical device or stretch/recreate product UI. Final composition and privacy require owner approval.",
+  "excludedSources": [
+    "DEBUG UI fixtures including synthetic connected/video states",
+    "historical simulator build10 waiting/Keychain-error screenshots",
+    "Xcode upload-success and account screenshots"
+  ]
+}

@@ -93,6 +93,14 @@ public final class MetalRenderer:NSObject,MTKViewDelegate {
     guard let self, let input=self.inputContext, let epoch=self.videoEpoch else{return nil}
     return VideoDecodeContext(attachment:input,epoch:epoch)
    }, presented: { [weak self] in self?.didPresentGeometry?(geometryRevision) })
+   #if targetEnvironment(simulator)
+   // Simulator SDK does not expose drawable presentation notifications. This permits UI
+   // testing after GPU completion, without claiming physical presentation/latency validation.
+   command.addCompletedHandler { command in
+    guard command.status == .completed else { return }
+    DispatchQueue.main.async { presented() }
+   }
+   #else
    drawable.addPresentedHandler{[diagnostics,presentationPressure] d in
     guard d.presentedTime>0 else{return}
     DispatchQueue.main.async { presented() }
@@ -102,6 +110,7 @@ public final class MetalRenderer:NSObject,MTKViewDelegate {
     diagnostics.mark("video.presented",session:sid,item:fid,time:time,sourceTime:frame.frame.captureTime,geometryGeneration:geometryRevision)
     diagnostics.mark("video.receiveToPresent",session:sid,item:fid,time:time,sourceTime:frame.received,value:Double(time>=frame.received ? time-frame.received:0)/1e6)
    }
+   #endif
   }
   command.addCompletedHandler{[slots] _ in _=yt;_=uvt;_=buffer;slots.signal()};command.present(drawable);command.commit()
  }

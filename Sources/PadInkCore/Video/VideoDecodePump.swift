@@ -17,6 +17,13 @@ public struct VideoDecodeQueueSnapshot: Equatable {
  public let peakPendingFrames: Int, peakPendingBytes: Int, peakRetainedFrameBytes: Int
  public let droppedFrames: UInt64, recoveries: UInt64, waitingForIDR: Bool, scheduledWorkers: Int
  public let lastRecoveryReason: String?
+
+ /// Normal configuration/IDR replacement also discards pending pictures. Those diagnostic
+ /// drops are not congestion: only queue pressure, reference-chain recovery or waiting for
+ /// an independent picture should ask the sender to degrade video.
+ public func congested(sinceRecoveries previous: UInt64) -> Bool {
+  pendingFrames >= 2 || recoveries > previous || waitingForIDR
+ }
 }
 
 /// Bounded compressed-video admission, before the asynchronous media hop. Keeps a contiguous

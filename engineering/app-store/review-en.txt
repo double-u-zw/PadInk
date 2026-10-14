@@ -1,0 +1,19 @@
+PadInk 0.3.0 / build 12 — installation and reviewer instructions
+
+PadInk mirrors the entire main display of the user's own Mac to iPad and sends Apple Pencil/touch input to the active Mac application. There is no cloud desktop, hosting service, app catalog, content store or PadInk account. No review login is required. The Mac application saves documents. Third-party apps, including Ecru, are separate and are not bundled. The interface is Simplified Chinese.
+
+Requires an Apple Silicon Mac (macOS deployment target 14+), iPadOS 17+, a USB data cable, and a compatible Pencil for handwriting. Only arm64 is supplied. Minimum OS versions and external devices have not been validated.
+Mac companion download: TO CONFIRM (a notarized ZIP downloadable without signing in).
+File: PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip
+SHA-256: 374eb9570c572efdc222d97413366cdce81389da356f67f02e7e25acaf376521
+
+1. Unzip and open PadInk.app. Save documents and quit any older PadInk first; keep the new copy in a separate folder if an older app has the same name. Accept the normal system launch prompt; keep Gatekeeper enabled.
+2. Open the pen icon in the Mac menu bar. Allow Screen Recording for video and Accessibility for input in System Settings > Privacy & Security. Quit/reopen if requested. PowerPoint zoom may additionally require Automation permission.
+3. Install the submitted build 12 on iPad and keep it unlocked with PadInk in the foreground. “用 USB 开始” means Start with USB; “等待 Mac 连接” means Waiting for Mac and is normal before connecting.
+4. Connect a USB data cable. Trust the computer if iPadOS asks. Then check device names and select “允许配对” (Allow pairing) on BOTH devices. System trust and app pairing are separate steps. Wait for USB status and the Mac display. Keep VPN enabled; Wi-Fi setup is unnecessary for this test.
+5. Open a non-private test document on Mac and select its pen tool. Write on iPad, then save, close and reopen on Mac. Enable “允许手指操作 Mac” (Allow finger control of Mac) for tap/drag/two-finger scroll. Zoom depends on the target app's public controls and document focus; native pinch is not promised for every app.
+6. Lift Pencil/fingers, unplug/replug USB and check recovery. No picture: check Screen Recording. No input: check Accessibility, tool and focus. Do not delete pairing for ordinary disconnections. Export “诊断” (Diagnostics) on both devices if needed, excluding private documents.
+
+USB uses a public Network.framework loopback listener on iPad and the system usbmuxd socket on Mac; the Mac socket interface is undocumented. No bundled driver, root helper, debugserver, developer disk image or debugging service is used. Xcode, AltServer, AltStore and Developer Mode are not intended runtime requirements. Pairing authenticates devices; USB frames do not add encryption. Retained Wi-Fi code uses system TLS.
+
+The owner confirmed initial use of TestFlight build 12 and the notarized Mac companion without observed problems. Developer Mode-off, Xcode/AltServer-exited and document tasks are tracked separately; no external first-install validation is claimed. Please evaluate the Mac companion dependency and USB mirroring as described. No prior Apple approval or exemption is claimed.

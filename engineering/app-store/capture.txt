@@ -1,0 +1,27 @@
+PadInk 0.3.0 / build 12 — 真实截图与审核演示操作单
+
+使用现有 Mac、iPad 和 Pencil。已有 RC1 USB 结论保留；本人已确认 TestFlight build12 + 公证 arm64 Mac 初步试用无问题。这里只补正式渠道与拍摄证据。Wi-Fi、第二套设备和招募外部测试者不作为本轮材料交付条件。
+
+准备：保存个人文稿，切换到空白测试文稿（两页即可），隐藏通知与私人窗口。确认两端 0.3.0 (12)，实际 iPad 为 TestFlight，Mac 为对应公证包。保持 VPN 开启。需要记录关闭开发者模式时由本人操作，不卸载原 AltStore App；Mac 只退出 Xcode、AltServer 与旧 PadInk，不卸载工具、不删除配对。
+
+一次拍摄顺序
+1. USB 连接成功，在 Mac 目标应用选笔，在 iPad 用 Pencil 手写“PadInk”及长短线/圆形，抬笔后原生截图。保留真实 PadInk UI，不用合成笔迹。建议商店标题：“在 Mac 文稿上书写 / Write in your Mac document”。
+2. 对同一文稿做双指滚动或已验证缩放，再截图。标题：“双指操作文稿 / Navigate with two fingers”。静态截图不证明手势过程，实际结果要由本人确认。
+3. 真实 USB 连接状态或帮助入口截图，明确需 Mac 辅助端。标题：“USB 连接你的 Mac / Connect to your Mac by USB”。
+4. 在 Mac 保存、关闭并重开测试文稿，抬笔后拔插 USB 看恢复。只记录实际通过的项目；沿用 docs/试用验收清单.txt 第八节 F1–F6，不再重跑整套 RC1。
+
+素材至少保留：原始文件、拍摄日期、设备/系统、两端 build/渠道、目标应用及其版本（Ecru 配套为 bridge v1，版本以 docs/ECRU.md 核对；Ecru 单独安装）。不按 iPad 型号推断 Pencil 型号。不收集私人文稿、账户、通知或签名配置。
+
+尺寸与可用来源
+Apple 要求 iPad 13 英寸栏至少1张、最多10张，横屏 2752×2064 或 2732×2048，PNG/JPG/JPEG。本工具当前接收无损 PNG。现有 iPad Air5 原图为 2360×1640，不直接冒充13英寸原图，不拉伸变形。
+可以将真实功能原图按原比例排版进所需商店画布，配上述简短说明文字；这是含真实截图的宣传排版，不伪造13英寸设备、画面或连接状态。应让截图成为主体，避免只展示图标/等待页。原图与成品分别留存，最终成品需本人确认真实能力与隐私。无需为了截图购买另一台设备。
+若使用13英寸模拟器，必须来自同一冻结源码并实际运行所展示的功能；仅等待页、DEBUG connected/video fixture、旧 build10 的 Keychain 错误图都排除。Apple 账号页面、Xcode 上传成功图也不用于商店截图。当前 approvedStoreScreenshots 仍为空，不自动批准参考图。
+
+审核演示视频（建议，非通用必填项）
+1–3分钟即可：两端版本/渠道 → 开发者模式关闭与工具退出说明 → USB 已连接 → Pencil/抬笔与双指 → Mac 保存重开 → 拔插恢复。iPad 自带录屏可录实际操作，Mac 可补自身录屏与保存步骤；不需要第二套设备。没有拍摄Pencil实物时如实说明输入方式。
+这是给审核员理解伴侣依赖的附件，不是商店 App Preview。视频无私密内容，经本人允许后再上传到适当位置；本轮不上传、不生成伪链接。Apple 若实际要求演示时，才将 reviewVideoRequired 设为 true。
+
+确认后更新 screenshots.json 资产清单和 metadata.json 的 approvedStoreScreenshots（文件、build、SHA-256、真实功能/隐私确认）；实际真人 USB 项另行填写。素材成功生成不等于 Apple 审核或外部设备通过。
+官方要求（2026-10-14）：
+https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/
+https://developer.apple.com/app-store/review/guidelines/ （2.3.3 允许解释性的叠加文字/图像，且必须展示真实使用）

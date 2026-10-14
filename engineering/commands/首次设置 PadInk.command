@@ -5,7 +5,7 @@ cd "${0:A:h:h:h}"
 die() { print -P "\n%F{red}✗ $1%f"; print "按回车键关闭窗口。"; read -r _; exit 1; }
 print -P "%BPadInk · 首次设置%b"
 print "请保留这整个文件夹：首次安装和每周续期都使用它。"
-print "默认安装独立的 PadInk Dev，不覆盖现有 PadInk；首次需要新授权与配对。"
+print "默认安装独立的 PadInk，不覆盖现有 PadInk；首次需要新授权与配对。"
 print "这一步准备签名；完成后还需运行“更新 PadInk”安装两端。"
 print -P "\n%B▶ 1/3 检查 Xcode%b"
 xcodebuild -version > /dev/null 2>&1 || die "没有找到可用的 Xcode。请从 App Store 安装 Xcode，打开一次并完成许可与组件安装。若已安装，请在 Xcode › 设置 › 位置中把命令行工具选为 Xcode。"

@@ -5,7 +5,7 @@ final class ProductIdentityTests: XCTestCase {
  func testDevelopmentAndReleaseNamespacesAreIndependent() {
   let dev = ProductIdentity.namespace(for: .development)
   let release = ProductIdentity.namespace(for: .release)
-  XCTAssertEqual(dev.displayName, "PadInk Dev")
+  XCTAssertEqual(dev.displayName, "PadInk")
   XCTAssertEqual(release.displayName, "PadInk")
   XCTAssertNotEqual(dev.keychainService, release.keychainService)
   XCTAssertNotEqual(dev.usbLoopbackPort, release.usbLoopbackPort)

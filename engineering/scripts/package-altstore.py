@@ -80,7 +80,7 @@ def package(out, public_beta=False, variant='release'):
     identity = module('package_identity', 'build-identity.py')
     source = identity.identity(ROOT)
     channel = 'development' if variant == 'development' else 'rc'
-    app_name = 'PadInk Dev' if variant == 'development' else 'PadInk'
+    app_name = 'PadInk' if variant == 'development' else 'PadInk'
     brand = 'PadInk-Dev' if variant == 'development' else 'PadInk'
     mac_id = MAC_ID + ('.development' if variant == 'development' else '')
     ipa = module('package_ipa', 'build-altstore-ipa.py').build(work / 'ipad', channel=channel, variant=variant)
