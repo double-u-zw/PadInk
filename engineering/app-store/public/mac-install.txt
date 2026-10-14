@@ -1,18 +1,18 @@
 PadInk 0.3.0 / build 12 — Mac 辅助端安装 / Mac companion installation
-本地正式渠道草稿；尚无正式下载。不得把未公证 Beta 3 / build 11 当成此指南的包。
+配套 Mac 候选包下载见下方；iPad App Store 版尚未上架。不得把未公证 Beta 3 / build 11 当成此指南的包。
 
-1. 从维护者确认的 GitHub Release 下载与 iPad 版本匹配的 Developer ID 签名、公证包及 SHA256SUMS。精确链接待确认。本轮只提供 M 系列 arm64 包。在终端 shasum -a 256 <下载的ZIP路径>，与 SHA256SUMS 对照。
+1. 从维护者确认的 GitHub Release 下载与 iPad 版本匹配的 Developer ID 签名、公证包及 SHA256SUMS。精确链接：https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-rc.1-build12/PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip 。本轮只提供 M 系列 arm64 包。在终端 shasum -a 256 <下载的ZIP路径>，与 SHA256SUMS 对照。
 2. 解压，将 PadInk.app 放入“应用程序”并打开。已有同名旧测试版先保存文稿、退出旧 App，并联系维护者确认身份；正式 Mac 标识已确定为 com.padink.mac；与现有开发/AltStore 身份分开验收，不直接覆盖日用安装。
 3. 正常接受系统的下载应用确认。签名／公证包被 Gatekeeper 阻止时反馈错误，不关闭安全检查，不运行去隔离属性命令。无需 root、驱动、Xcode 或 AltServer。
 4. 点菜单栏笔形图标，按提示到“系统设置 › 隐私与安全性”允许屏幕录制（画面镜像）和辅助功能（笔／手指输入）。系统要求时退出重开。PowerPoint 缩放可能额外询问自动化；书写不依赖这项权限。拒绝权限时对应功能不可用，可在同一设置恢复。
-5. iPad 正式版在 App Store 安装；TestFlight 只用于测试。保持解锁、PadInk 前台，插 USB 数据线，系统询问时信任电脑，核对设备名并在两端点“允许配对”。VPN 保持开启。预期不需开发者模式；本人已确认 TestFlight build12 + 公证 Mac 初步试用；正式渠道细项以实际验收记录为准，外部设备未验证。
+5. iPad 正式版在 App Store 安装；TestFlight 只用于测试。保持解锁、PadInk 前台，插 USB 数据线，系统询问时信任电脑，核对设备名并在两端点“允许配对”。VPN 保持开启。预期不需开发者模式；本人已确认 TestFlight build12 + 公证 Mac 在开发者模式关闭、Xcode/AltServer退出且VPN开启时，USB、Pencil、双指、拔插恢复及保存重开正常；外部设备未验证。
 6. Mac 打开测试文稿，选应用笔工具，在 iPad 写字。保存、关闭、重开都由目标应用完成。普通更新／断线不卸载 iPad、不复制 Keychain、不删除配对。开发签名／AltStore／换团队转正式版的设置与配对不保证迁移，先保留旧安装；新正式版按独立身份验收并重新配对。
 
-1. Download the matching Developer ID signed and notarized Mac ZIP and SHA256SUMS from the maintainer-confirmed GitHub Release. Exact link pending. This candidate provides arm64 for Apple Silicon only. Compare `shasum -a 256 <downloaded ZIP path>` with SHA256SUMS.
+1. Download the matching Developer ID signed and notarized Mac ZIP and SHA256SUMS from the maintainer-confirmed GitHub Release. Exact link: https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-rc.1-build12/PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip. This candidate provides arm64 for Apple Silicon only. Compare `shasum -a 256 <downloaded ZIP path>` with SHA256SUMS.
 2. Unzip and move PadInk.app to Applications. Save documents and quit any older copy first. If a previous test app has the same name, ask the maintainer about identity before replacing it; the official Mac identity is com.padink.mac and must be validated separately from the daily development installation.
 3. Accept the normal downloaded-app prompt. If Gatekeeper blocks the signed/notarized package, report the error; do not disable security or strip quarantine. No root access, driver, Xcode or AltServer is intended to be required.
 4. Open the menu-bar pen icon. Allow Screen Recording for mirroring and Accessibility for input in System Settings > Privacy & Security. Restart if macOS asks. PowerPoint zoom may request Automation permission; handwriting does not require it. Denied permissions can be restored in the same settings.
-5. Install iPad PadInk from App Store (TestFlight for testing), unlock iPad and keep PadInk foreground. Connect a USB data cable, trust the Mac if the system asks, and confirm device names and “允许配对” (Allow pairing) on both apps. Keep the VPN enabled. Developer Mode is not an intended requirement; the owner confirmed initial use of TestFlight build12 and the notarized Mac companion; detailed channel checks and external devices remain unverified.
+5. Install iPad PadInk from App Store (TestFlight for testing), unlock iPad and keep PadInk foreground. Connect a USB data cable, trust the Mac if the system asks, and confirm device names and “允许配对” (Allow pairing) on both apps. Keep the VPN enabled. Developer Mode is not an intended requirement; the owner confirmed USB, Pencil, touch, reconnect and saving/reopening on TestFlight build12 with the notarized Mac companion, Developer Mode off, Xcode/AltServer exited and VPN on; external devices remain unverified.
 6. Choose the Mac application's pen tool and write on iPad; save and reopen using that application. Ordinary updates/disconnections do not require uninstalling, copying Keychain or deleting pairing. Development/AltStore/different-team identities do not guarantee settings or pairing migration. Preserve the old installation and test the official app as a separate identity.
 
 Support: https://github.com/double-u-zw/PadInk/issues
