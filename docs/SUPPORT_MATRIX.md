@@ -4,7 +4,7 @@ Mac 仅面向 **Apple Silicon（M 系列 / arm64）**。Intel 不再纳入后续
 
 当前公开测试版为 **0.3.0 Beta 3 / build 11**，采用未公证 Mac 测试包 + iPad AltStore，下载见 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.3)。当前源码为 build 12 产品源码与后续工程、文档整理，公开源码不等于已公开新的安装包。
 
-2026-10-14，**0.3.0 / build 12** 的 M 系列 Mac 已通过 Developer ID 签名、公证与票据校验，iPad 已完成 TestFlight 上传处理。维护者已安装这套组合并确认初步试用未发现问题；正式渠道的完整逐项记录、外部设备首装、长时间文稿和最低系统验证仍待补齐，尚未提交 App Store 审核或公开发布 build 12 安装包。
+2026-10-14，**0.3.0 / build 12** 的 M 系列 Mac 已通过 Developer ID 签名、公证与票据校验，iPad 已完成 TestFlight 上传处理。维护者已确认现有设备上的 USB、Pencil、双指操作、拔插恢复和文稿保存重开正常。M 系列 Mac 公证包已在 [build 12 发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-rc.1-build12)公开，iPad 仍通过受邀 TestFlight 测试，尚未在 App Store 上架；外部设备首装、长时间文稿和最低系统验证仍待补齐。
 
 此前 RC1 的 USB 真人使用验收、开发身份的 USB / Wi-Fi 与输入使用记录继续作为历史基线。2026-10-13 的开发身份 build 10 原位更新保留了设置与配对，Ecru 激光笔试用未见问题；这些结果不能替代当前渠道和独立设备的验收。应用支持与限制见下表。
 
@@ -28,7 +28,7 @@ Mac 仅面向 **Apple Silicon（M 系列 / arm64）**。Intel 不再纳入后续
 - **自动切换**：USB 优先；插拔线后有恢复过程，当前手势会安全结束，恢复后重新落笔。断线输入不会补送。
 - **前台与权限**：Mac PadInk 和目标应用都要运行；iPad PadInk 保持前台、屏幕解锁。Mac 屏幕录制用于显示画面，辅助功能用于输入，PowerPoint 缩放另可能需要自动化授权。
 - **本轮试用**：Mac 为 ad-hoc 签名的未公证 DMG，iPad 由官方 AltStore Classic 安装独立 IPA 并续签；使用者无需 Xcode，免费签名约 7 天。先验收 USB 路径。安装和更新见 [AltStore 安装说明](AltStore安装说明.txt)，逐项结果见[真人验收清单](试用验收清单.txt)。
-- **后续 Apple 分发渠道**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；build 12 已完成 Mac 公证和 TestFlight 上传处理，维护者已安装并初步试用，完整渠道验收与公开发布尚未完成。这些渠道无需使用者每周重签；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
+- **后续 Apple 分发渠道**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；build 12 已完成 Mac 公证和 TestFlight 上传处理，维护者已完成现有设备的 USB 使用验证，Mac 公证包已公开；外部设备首装、长时间任务与 App Store 上架仍待完成。这些渠道无需使用者每周重签；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
 
 ## 设备组 A — 开发者
 

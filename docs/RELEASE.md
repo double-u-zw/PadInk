@@ -2,7 +2,7 @@
 
 命令在源码仓库根目录执行。本文描述候选准备、签名、公证、安装验证和发行操作；本地签名覆盖安装与 Developer ID / TestFlight 分发分别核验。对外发布的正式版统一为 PadInk（包括 Beta/RC），本机源码开发与内部自用采用 development 身份，界面同样显示 PadInk；公开下载不提供开发身份。2026-10-14 已将日用 Mac 统一为 `/Applications/PadInk.app` 的正式 RC build 12，与 iPad TestFlight build 12 配套；旧开发版与重复可启动副本已移至废纸篓。现有配对与权限数据保留，发行恢复材料仍在本机。
 
-当前 `main` 公开最新源码、测试、工具和文档；本次源码提交不新增安装包 Release、不修改历史 tag、不提交 Apple 审核。已安装 build 12 的原冻结提交仍为 `e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89`，App 输入摘要为 `6d912b4a07671f2be558fcb1a8678232667adf3d97454d54bb47bf7ff7929c4e`；公开提交包含后续工具和文档整理，不能替代原安装包的签名与构建身份记录。
+当前 `main` 公开最新源码、测试、工具和文档；本次源码提交与安装包发行分别处理；M 系列 build 12 公证 Mac 辅助端随后已发布到 [GitHub Release](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-rc.1-build12)，iPad 仍为受邀 TestFlight，尚未在 App Store 上架。历史 Beta tag 保留原样。已安装 build 12 的原冻结提交仍为 `e8cd70ff8a146f0f1ee1b41992ed11f0bc2eaf89`，App 输入摘要为 `6d912b4a07671f2be558fcb1a8678232667adf3d97454d54bb47bf7ff7929c4e`；公开提交包含后续工具和文档整理，不能替代原安装包的签名与构建身份记录。
 
 ## App Store 正式发行（当前本地候选 0.3.0 / build 12）
 
