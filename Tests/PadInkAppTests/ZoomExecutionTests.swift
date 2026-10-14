@@ -51,7 +51,7 @@ final class ZoomExecutionTests: XCTestCase {
    catch { XCTFail("fixture payload rejected: \(error)") }
   }
   func send(_ id: UInt64, _ sequence: UInt32, _ phase: TouchPhase, kind: TouchKind = .magnify, delta: Float = 0, stamp: UInt64? = nil, input: InputContext? = nil) {
-   let e = TouchEvent(gestureID: (1 << 63) + id, sequence: sequence, timestamp: now + UInt64(sequence), geometryGeneration: 1, kind: kind, phase: phase, x: 0.5, y: 0.5, dx: delta)
+   let e = TouchEvent(gestureID: (UInt64(1) << 63) + id, sequence: sequence, timestamp: now + UInt64(sequence), geometryGeneration: 1, kind: kind, phase: phase, x: 0.5, y: 0.5, dx: delta)
    frame(kind.message, try! e.encoded(), input: input, stamp: stamp)
   }
   func tail(_ id: UInt64 = 1, delta: Float = 0.15) {
@@ -61,7 +61,7 @@ final class ZoomExecutionTests: XCTestCase {
   func geometry(_ generation: UInt32, ready: Bool = true, input: InputContext? = nil) {
    frame(.presentedGeometry, PresentedGeometry(generation: generation, ready: ready, orientation: 4, videoWidth: 500, videoHeight: 500).encoded(), input: input)
   }
-  func cancel(_ id: UInt64 = 1, input: InputContext? = nil) { frame(.inputCancel, GestureNotice(gestureID: (1 << 63) + id, reason: .appBackground).encoded(), input: input) }
+  func cancel(_ id: UInt64 = 1, input: InputContext? = nil) { frame(.inputCancel, GestureNotice(gestureID: (UInt64(1) << 63) + id, reason: .appBackground).encoded(), input: input) }
   func settings(_ enabled: Bool) { frame(.inputSettings, InputSettings(touchEnabled: enabled).encoded()) }
   func target(_ revision: UInt64, input: InputContext? = nil) { MacCoordinator.targetChanged(to: revision, input: input ?? self.input, touch: touch) }
   func attachment(_ event: AttachmentEvent, input: InputContext? = nil) { MacCoordinator.inputAttachmentEvent(event, input: input ?? self.input, pencil: pencil, touch: touch) }
@@ -100,7 +100,7 @@ final class ZoomExecutionTests: XCTestCase {
  }
  func testAcceptedPinchReplacesEndedTailWithItsOwnContext() {
   let f = Fixture(); f.tail(); f.tail(2); XCTAssertEqual(f.workers.count, 1); f.drain()
-  XCTAssertEqual(f.sink.calls.map(\.gestureID), [(1 << 63) + 2]); XCTAssertEqual(f.probes.map(\.gestureID), [(1 << 63) + 2])
+  XCTAssertEqual(f.sink.calls.map(\.gestureID), [(UInt64(1) << 63) + 2]); XCTAssertEqual(f.probes.map(\.gestureID), [(UInt64(1) << 63) + 2])
  }
  func testGeometryInvalidationAfterEndedRevokesTail() {
   for ready in [true, false] { let f = Fixture(); f.tail(); f.geometry(ready ? 2 : 1, ready: ready); f.drain(); XCTAssertTrue(f.sink.calls.isEmpty) }
@@ -168,7 +168,7 @@ final class ZoomExecutionTests: XCTestCase {
   let f = Fixture(); f.tail(); f.worker() // result is waiting on the input queue
   f.tail(2); XCTAssertTrue(f.workers.isEmpty)
   f.complete(); XCTAssertEqual(f.workers.count, 1); f.drain()
-  XCTAssertEqual(f.probes.map(\.gestureID), [(1 << 63) + 1, (1 << 63) + 2]); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(1 << 63) + 2])
+  XCTAssertEqual(f.probes.map(\.gestureID), [(UInt64(1) << 63) + 1, (UInt64(1) << 63) + 2]); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(UInt64(1) << 63) + 2])
  }
  func testStaleExecuteCompletionDoesNotReleaseNewPointerOrApplyOldStatus() {
   let f = Fixture(); var submitted = 0; f.zoom.onSubmitted = { _ in submitted += 1 }
@@ -179,13 +179,13 @@ final class ZoomExecutionTests: XCTestCase {
   let f = Fixture(); f.tail(); f.probe(); f.worker(); f.tail(2, delta: 1)
   let old = f.complete()!; XCTAssertEqual(f.workers.count, 1)
   old(); XCTAssertEqual(f.workers.count, 1, "duplicate old completion cannot retire a new job")
-  f.drain(); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(1 << 63) + 1, (1 << 63) + 2, (1 << 63) + 2])
+  f.drain(); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(UInt64(1) << 63) + 1, (UInt64(1) << 63) + 2, (UInt64(1) << 63) + 2])
  }
  func testStaleTimerCannotClearNewScheduledFlagOrSubmitOldDemand() {
   let f = Fixture(); f.tail(delta: 1); f.probe(); f.worker(); f.complete(); let old = f.timers.removeFirst()
   f.tail(2, delta: 1); f.probe(); f.worker(); f.complete()
   XCTAssertEqual(f.timers.count, 1); old.fire(); XCTAssertEqual(f.timers.count, 1); XCTAssertTrue(f.workers.isEmpty)
-  f.drain(); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(1 << 63) + 1, (1 << 63) + 2, (1 << 63) + 2])
+  f.drain(); XCTAssertEqual(f.sink.calls.map(\.gestureID), [(UInt64(1) << 63) + 1, (UInt64(1) << 63) + 2, (UInt64(1) << 63) + 2])
  }
  func testRepeatedReplacementKeepsOneWorkerAndOneLatestAction() {
   let f = Fixture()
