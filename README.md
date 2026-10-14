@@ -11,15 +11,17 @@ PadInk 将 Mac 主屏画面显示在 iPad 上。用 Apple Pencil 在 Mac 应用�
 
 | 版本 | 使用方式 | 当前状态 |
 |---|---|---|
-| **0.3.0 Beta 3 · build 11** | Mac 测试包 + iPad AltStore | 已公开，可从下方下载；Mac 包未公证 |
-| **0.3.0 · build 12** | Mac 公证包 + iPad TestFlight | 维护者已安装并初步试用；尚无公开安装入口，未提交 App Store 审核 |
+| **0.3.0 · build 12** | Mac 公证包 + iPad TestFlight | Mac 包已公开；iPad 目前通过受邀 TestFlight 测试，尚未在 App Store 上架 |
+| **0.3.0 Beta 3 · build 11** | Mac 测试包 + iPad AltStore | 历史公开测试渠道；Mac 包未公证 |
 | **main 源码** | 自行构建 | 包含 build 12 产品源码、回归测试、工程工具与当前文档 |
 
 **Mac 仅支持 Apple Silicon（M 系列 / arm64），不提供 Intel 版本。**
 
-[下载 Beta 3 完整测试包（M 系列 Mac + iPad）](https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-beta.3/PadInk-0.3.0-b11-Beta-arm64.zip) · [发布记录](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.3)
+[下载 build 12 Mac 公证包（M 系列）](https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-rc.1-build12/PadInk-0.3.0-b12-mac-arm64-DeveloperID-notarized.zip) · [校验文件](https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-rc.1-build12/public-SHA256SUMS.txt) · [发布记录](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-rc.1-build12)
 
-ZIP 包含 Mac DMG、`PadInk-AltStore.ipa`、安装说明、使用教程和校验文件。历史发布页中的 Intel 资产保留原记录，已不在维护与支持范围。
+ZIP 包含 Developer ID 签名并经 Apple 公证的 Mac 辅助端，配合 **iPad TestFlight build 12** 使用。iPad 安装需要有效测试邀请；目前没有公开的 TestFlight 加入链接。详见[公证包安装说明](engineering/app-store/public/mac-install.txt)。
+
+历史 Beta 3 用户可继续获取[完整测试包（M 系列 Mac + AltStore IPA）](https://github.com/double-u-zw/PadInk/releases/download/v0.3.0-beta.3/PadInk-0.3.0-b11-Beta-arm64.zip)，按[AltStore 安装说明](docs/AltStore安装说明.txt)安装与续签。历史 Intel 资产保留原发布记录，已不在维护与支持范围。
 
 **已在使用 TestFlight build 12：** iPad 通过 TestFlight 更新，Mac 使用维护者提供的配套 build 12 公证包；测试有效期以 TestFlight 显示为准。请按安装渠道更新，更新前核对两端版本和配套构建。
 
@@ -34,7 +36,7 @@ ZIP 包含 Mac DMG、`PadInk-AltStore.ipa`、安装说明、使用教程和校�
 
 ## 开始使用
 
-1. **安装两端。** 公开 Beta 3：解压完整测试包，把 Mac DMG 中的 PadInk 拖到“应用程序”；按[安装说明](docs/AltStore安装说明.txt)安装官方 AltServer 和 AltStore Classic，再在 iPad 的 AltStore 导入 `PadInk-AltStore.ipa`。需要自己的 Apple ID，使用者无需 Xcode 或付费开发者会员。首次打开未公证 Mac 测试包时，按安装说明处理系统提示。
+1. **安装两端。** 下载并解压 build 12 Mac 公证包，将 PadInk 放到“应用程序”；在 iPad 通过 TestFlight 安装配套 build 12。Mac 按提示允许屏幕录制和辅助功能，按系统要求退出并重新打开 PadInk。完整流程见[安装说明](engineering/app-store/public/mac-install.txt)。
 2. **连接设备。** 打开两端 PadInk，用 USB 线连接 Mac 和 iPad，按系统提示信任设备，并在两端确认配对。VPN 可以保持开启。
 3. **开始书写。** 在 Mac 打开文稿，让目标应用处于前台并选择笔或批注工具，再用 iPad 上的 Pencil 书写。手指可操作界面，双指可滚动；捏合缩放取决于目标应用的支持。
 4. **保存文稿。** 在 Mac 的目标应用中保存，关闭并重新打开，确认结果。先用测试文稿熟悉操作。
@@ -53,6 +55,8 @@ PowerPoint、GoodNotes、Preview 等应用的具体操作见[使用教程](docs/
 | 有连接但没画面 | Mac 的屏幕录制权限；按系统要求退出并重新打开 PadInk |
 | 有画面但不能写 | Mac 的辅助功能权限、目标文稿是否在前台、是否已选择笔工具 |
 | 滚动或缩放无效 | 手指输入开关、目标应用能力、文稿焦点；先退出菜单或弹窗 |
+
+维护者已确认 build 12 在现有设备上的 USB、Pencil、双指操作、拔插恢复与文稿保存重开正常，见[发布记录](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-rc.1-build12)。独立新用户首装、外部设备、最低系统和长时间任务仍待验证。
 
 首次推荐 USB；Wi-Fi 需要同一局域网、本地网络权限和配对，受限网络的兼容性仍待验证。完整说明见[安装、更新与排障](docs/使用者安装指南.md)。
 
