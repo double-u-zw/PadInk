@@ -6,7 +6,7 @@
 
 ## App Store 正式发行（当前本地候选 0.3.0 / build 12）
 
-本轮目标：Mac 仅 Apple Silicon（M 系列 / arm64）；已生成的 Intel 签名包只作私有历史留存，不提交公证、不进入当前分发材料。公开 Beta 3 的双架构历史资产保持原样。iPad 经 App Store 安装，Mac 经 GitHub Release 提供 Developer ID 签名且已公证的辅助端。首发必要链路是普通 USB 数据线；现有 Wi-Fi 保留，但无线切换不阻挡 USB 首发，商店文案不承诺 Wi-Fi。build 12 是当前正式渠道的本地准备目标，arm64 已通过 Developer ID 公证、附票据和 Gatekeeper；正式 iPad 已签名，TestFlight 上传按下方实时记录区分，尚未提交 App Store 审核。公开 Beta 3 / build 11 是另一分发状态（AltStore + Mac ad-hoc），已有资产保持冻结。历史 build 10 工程/商店资料保留原版本；当前可维护素材在 `engineering/app-store/`，冻结历史输出在 `build/app-store/materials-build10/`。2026-10-14 维护者确认会员注册已通过；正式个人团队及 Developer ID Application / Apple Distribution 私钥身份已在本机核对。正式标识由维护者确认采用 com.padink.mac / com.padink.ipad；发行配置独立于日用配置。正式 iPad App Store profile 与 Apple Distribution 导出已通过；arm64 公证已 Accepted，票据和 Gatekeeper 通过。App Store Connect 免费 App 协议有效，PadInk 记录已创建（com.padink.ipad，SKU padink-ipad，主要语言简体中文）；版本草稿为 0.3.0，设为手动发布。用户已授权 build 12 TestFlight 上传，上传/处理/本人 USB 验证保持各自独立状态。不改变现有开发签名、安装或信任。
+本轮目标：Mac 仅 Apple Silicon（M 系列 / arm64），后续不再构建、维护或验收 Intel 版本；已生成的 Intel 签名包只作私有历史留存，不提交公证、不进入当前分发材料。公开 Beta 3 的双架构历史资产保持原样。iPad 经 App Store 安装，Mac 经 GitHub Release 提供 Developer ID 签名且已公证的辅助端。首发必要链路是普通 USB 数据线；现有 Wi-Fi 保留，但无线切换不阻挡 USB 首发，商店文案不承诺 Wi-Fi。build 12 是当前正式渠道的本地准备目标，arm64 已通过 Developer ID 公证、附票据和 Gatekeeper；正式 iPad 已签名，TestFlight 上传按下方实时记录区分，尚未提交 App Store 审核。公开 Beta 3 / build 11 是另一分发状态（AltStore + Mac ad-hoc），已有资产保持冻结。历史 build 10 工程/商店资料保留原版本；当前可维护素材在 `engineering/app-store/`，冻结历史输出在 `build/app-store/materials-build10/`。2026-10-14 维护者确认会员注册已通过；正式个人团队及 Developer ID Application / Apple Distribution 私钥身份已在本机核对。正式标识由维护者确认采用 com.padink.mac / com.padink.ipad；发行配置独立于日用配置。正式 iPad App Store profile 与 Apple Distribution 导出已通过；arm64 公证已 Accepted，票据和 Gatekeeper 通过。App Store Connect 免费 App 协议有效，PadInk 记录已创建（com.padink.ipad，SKU padink-ipad，主要语言简体中文）；版本草稿为 0.3.0，设为手动发布。用户已授权 build 12 TestFlight 上传，上传/处理/本人 USB 验证保持各自独立状态。不改变现有开发签名、安装或信任。
 
 维护者已完成此前 RC1 的 USB 真人使用验收（2026-10-13 在当前会话确认）；保留该基线，当前只补视频反馈、Pencil 抬笔/取消及滚动修复的相关回归。该确认不扩展为未记录的逐项结果、外部首装或正式签名渠道通过。Wi-Fi、第二套设备和最低系统继续标为各自未验证；Intel 不在本轮正式候选范围，均不作为本轮发行工程收尾的先决条件。
 
@@ -194,8 +194,8 @@ python3 engineering/scripts/rc-release.py check build/rc/preview
 python3 engineering/scripts/rc-release.py prepare --out build/rc/0.3.0-rc.2 --notes <本机候选说明文件>
 
 # 付费账户、固定AppID与本机Release配置准备好后，逐端生成
-python3 engineering/scripts/rc-release.py mac --release build/rc/0.3.0-rc.2 --arch all
-# 也可分别执行 --arch arm64 与 --arch x86_64；两份都完成才允许公开 staging
+python3 engineering/scripts/rc-release.py mac --release build/rc/0.3.0-rc.2 --arch arm64
+# 当前候选只声明 arm64；历史 Intel 资产不进入本轮 staging
 python3 engineering/scripts/rc-release.py ipad --release build/rc/0.3.0-rc.2
 python3 engineering/scripts/rc-release.py check build/rc/0.3.0-rc.2 --require-assets --verify-platform
 
@@ -224,7 +224,7 @@ python3 engineering/scripts/rc-release.py check-public build/rc-public/0.3.0-rc.
 | TestFlight 候选 `.ipa`、两端 `.xcarchive` / `.dSYM` | 否；AltStore 路径的独立未签名 IPA 可另行提供下载 | 是，按 version/build/source 和二进制 UUID 归档 |
 | 本机签名配置、证书/私钥、Keychain、profile凭据、安装日志、测试诊断 | 否 | 必要时本机保管，不能随源码包打包 |
 
-正式 Mac 包分别构建 arm64 / x86_64 单架构二进制，Intel Mac 仍尚未真机验收；两端 archive 保留与二进制 UUID 匹配的 dSYM。正式候选源码包绑定干净的提交，不含未提交 diff、签名配置、配对密钥或验收文件；working-tree preview 源码包显式包含当前源码改动，仅用于预览。Xcode archive / dSYM 要与实际发行二进制 UUID 匹配，保留期限至少覆盖此版本的支持期；缺失或不匹配就无法可靠还原 crash stack。[Apple crash 诊断](https://developer.apple.com/documentation/xcode/diagnosing-issues-using-crash-reports-and-device-logs)
+后续正式 Mac 包只构建 arm64 单架构二进制，不提供 Intel 版本；两端 archive 保留与二进制 UUID 匹配的 dSYM。正式候选源码包绑定干净的提交，不含未提交 diff、签名配置、配对密钥或验收文件；working-tree preview 源码包显式包含当前源码改动，仅用于预览。Xcode archive / dSYM 要与实际发行二进制 UUID 匹配，保留期限至少覆盖此版本的支持期；缺失或不匹配就无法可靠还原 crash stack。[Apple crash 诊断](https://developer.apple.com/documentation/xcode/diagnosing-issues-using-crash-reports-and-device-logs)
 
 ## 升级、身份和数据保留
 

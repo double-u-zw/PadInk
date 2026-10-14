@@ -86,7 +86,7 @@ def package(out, public_beta=False, variant='release'):
     ipa = module('package_ipa', 'build-altstore-ipa.py').build(work / 'ipad', channel=channel, variant=variant)
     ipad = json.loads(ipa.with_suffix('.json').read_text())
     base = f"{brand}-{ipad['version']}-b{ipad['build']}"
-    names = {arch: base + '-' + ('Beta' if public_beta else 'Test') + '-' + arch for arch in ('arm64', 'x86_64')}
+    names = {arch: base + '-' + ('Beta' if public_beta else 'Test') + '-' + arch for arch in ('arm64',)}
     if any((out / (n + '.zip')).exists() or (out / n).exists() for n in names.values()):
         raise ValueError('Existing candidate will not be overwritten; increment build or choose a new output directory.')
     official = download_altserver(out, work)
@@ -153,7 +153,7 @@ def package(out, public_beta=False, variant='release'):
                         content = re.sub(r'\(' + re.escape(target) + r'(#[^)]*)?\)',
                                          lambda match: '(https://github.com/double-u-zw/PadInk/blob/main/docs/' + target + (match.group(1) or '') + ')', content)
                 (stage / 'docs' / document).write_text(content)
-            chip = 'Apple Silicon（M 系列）' if arch == 'arm64' else 'Intel'
+            chip = 'Apple Silicon（M 系列）'
             (stage / '先读我.txt').write_text(
                 f"{app_name} {ipad['version']} build {ipad['build']} — {chip}\n\n"
                 f"Mac 打开 {dmg_name}，将 {app_name}.app 拖入 Applications；iPad 用官方 AltStore Classic 导入 {ipa.name}。\n"

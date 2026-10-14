@@ -30,6 +30,7 @@ jobs:
           PADINK_CHECK_SCOPE: ci
           PADINK_BUILD_ROOT: build/check-ci
           PADINK_RELEASE_CHECK: daily
+          PADINK_MAC_ARCHITECTURES: arm64
         run: ./engineering/scripts/build-and-test.sh
       - name: Show failed check logs
         if: failure()

@@ -1,6 +1,6 @@
 # PadInk 工程工具
 
-development 与 release 是分别隔离的开发和正式身份，界面名称同为 PadInk；本轮正式 Mac 候选只构建与公证 arm64（M 系列），历史双架构包保留原记录，见发布流程。
+development 与 release 是分别隔离的开发和正式身份，界面名称同为 PadInk；后续 Mac 构建与分发只面向 arm64（M 系列），AltStore 打包也只生成 arm64；历史双架构包保留原记录，见发布流程。
 
 所有开发、安装、打包、诊断与实验入口集中在本目录。下面命令从仓库根目录运行；源码安装的 `.command` 也可在 Finder 中双击，它们会自行定位工程根目录。
 

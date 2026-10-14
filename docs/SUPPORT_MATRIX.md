@@ -1,16 +1,12 @@
 # PadInk 发布支持范围
 
-现有公开版本为 **0.3.0 Beta 3（build 11）测试版**，下载入口见 [发布页](https://github.com/double-u-zw/PadInk/releases)；该候选包的真人验收尚待完成。当前开发者设备已有 USB / Wi-Fi、自动切换、Pencil / Touch 和 GoodNotes 连续缩放的使用记录；2026-10-11 的 Ecru USB 实测记录见下表。以下表格说明实际支持范围与尚未验证的边界；正式 Developer ID / TestFlight 分发、最低系统和第二套设备仍需单独验证。
+Mac 仅面向 **Apple Silicon（M 系列 / arm64）**。Intel 不再纳入后续版本的构建、分发、维护或验收范围；历史 Beta 的 Intel 安装包保留原发布记录。
 
-本次对外发布的两端都叫 PadInk。Mac 安装包分别提供 arm64（Apple Silicon / M 系列）与 x86_64（Intel），iPad IPA 共用；Intel 实机仍未验证。
+当前公开测试版为 **0.3.0 Beta 3 / build 11**，采用未公证 Mac 测试包 + iPad AltStore，下载见 [发布页](https://github.com/double-u-zw/PadInk/releases/tag/v0.3.0-beta.3)。当前源码为 build 12 产品源码与后续工程、文档整理，公开源码不等于已公开新的安装包。
 
-Beta 3 使用 build 11。此前 build 8 的 AltStore 安装、启动与 Refresh All 已在 2026-10-12 核对，后台刷新开关由使用者确认开启，尚未观察实际后台续签周期。这些记录不代替 build 11 公开包验收。当前包的完整真人验收、Developer ID 公证下载与 TestFlight 验收仍待完成，详见[真人验收清单](试用验收清单.txt)。
+2026-10-14，**0.3.0 / build 12** 的 M 系列 Mac 已通过 Developer ID 签名、公证与票据校验，iPad 已完成 TestFlight 上传处理。维护者已安装这套组合并确认初步试用未发现问题；正式渠道的完整逐项记录、外部设备首装、长时间文稿和最低系统验证仍待补齐，尚未提交 App Store 审核或公开发布 build 12 安装包。
 
-2026-10-13，维护者的 PadInk Dev build 10 已通过 USB 原位更新，设置与原配对保留；USB 视频修复在现有设备运行，维护者用 Ecru 激光笔测试后反馈未见问题。这不代替 Beta 3 / build 11 对外身份、第二套设备、Intel 或完整长时间文稿验收。
-
-维护者于 2026-10-13 确认此前 RC1 的 USB 真人使用验收已完成，保留该使用基线。当前 build 11 只补视频反馈、Pencil 抬笔/取消和滚动修复相关回归；正式签名/TestFlight USB 仍须独立验收。没有外部测试者不阻塞本轮代码与发行工具交付，也不把本人日用设备记录写成新用户首装。
-
-2026-10-14 当前私有正式候选为 **0.3.0 / build 12**：M 系列 arm64 Mac 已签名、公证并附票据；iPad 已上传并完成 TestFlight 处理。本人已确认该正式组合初步试用未发现问题；关闭开发者模式、工具退出与文稿保存重开的逐项记录仍待补齐；外部设备未验证。没有提交审核或公开发布，不扩充 Intel 范围。此前 RC1 的 USB 结论继续保留。
+此前 RC1 的 USB 真人使用验收、开发身份的 USB / Wi-Fi 与输入使用记录继续作为历史基线。2026-10-13 的开发身份 build 10 原位更新保留了设置与配对，Ecru 激光笔试用未见问题；这些结果不能替代当前渠道和独立设备的验收。应用支持与限制见下表。
 
 ## 应用任务与边界
 
@@ -32,7 +28,7 @@ Beta 3 使用 build 11。此前 build 8 的 AltStore 安装、启动与 Refresh 
 - **自动切换**：USB 优先；插拔线后有恢复过程，当前手势会安全结束，恢复后重新落笔。断线输入不会补送。
 - **前台与权限**：Mac PadInk 和目标应用都要运行；iPad PadInk 保持前台、屏幕解锁。Mac 屏幕录制用于显示画面，辅助功能用于输入，PowerPoint 缩放另可能需要自动化授权。
 - **本轮试用**：Mac 为 ad-hoc 签名的未公证 DMG，iPad 由官方 AltStore Classic 安装独立 IPA 并续签；使用者无需 Xcode，免费签名约 7 天。先验收 USB 路径。安装和更新见 [AltStore 安装说明](AltStore安装说明.txt)，逐项结果见[真人验收清单](试用验收清单.txt)。
-- **后续 Apple 分发渠道**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；build 12 已完成 Mac 公证和 TestFlight 上传处理，实际渠道安装/USB 与公开发布尚未完成。这些渠道无需使用者每周重签；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
+- **后续 Apple 分发渠道**：推荐 Mac Developer ID 签名、公证并附票据的应用 ZIP + iPad TestFlight（RC）/ App Store（稳定版）；build 12 已完成 Mac 公证和 TestFlight 上传处理，维护者已安装并初步试用，完整渠道验收与公开发布尚未完成。这些渠道无需使用者每周重签；本轮 AltStore 免费试用仍有续签要求。见[分发方案](RELEASE.md)与[安装指南](使用者安装指南.md)。
 
 ## 设备组 A — 开发者
 
