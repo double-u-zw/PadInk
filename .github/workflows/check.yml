@@ -31,6 +31,16 @@ jobs:
           PADINK_BUILD_ROOT: build/check-ci
           PADINK_RELEASE_CHECK: daily
         run: ./engineering/scripts/build-and-test.sh
+      - name: Show failed check logs
+        if: failure()
+        shell: bash
+        run: |
+          for log in build/check-ci/*.log; do
+            test -f "$log" || continue
+            echo "::group::$(basename "$log")"
+            tail -n 100 "$log"
+            echo '::endgroup::'
+          done
       - name: Identify the checked source, not a released installer
         if: always()
         shell: python
